@@ -1,0 +1,2382 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tile · VAI</title>
+    <meta
+      name="description"
+      content="Tile — one story, many tiles, shared spine. Build a clean series without template noise."
+    />
+    <meta name="theme-color" content="#000000" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Tile" />
+    <meta
+      property="og:description"
+      content="One story. Many tiles. Shared spine."
+    />
+    <meta property="og:url" content="https://le-vai.github.io/tile/" />
+    <meta property="og:image" content="https://le-vai.github.io/tile/assets/og_1200x675.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Tile" />
+    <meta
+      name="twitter:description"
+      content="One story. Many tiles. Shared spine."
+    />
+    <meta name="twitter:image" content="https://le-vai.github.io/tile/assets/og_1200x675.png" />
+    <link rel="canonical" href="https://le-vai.github.io/tile/" />
+    <style>
+      :root {
+        color-scheme: dark;
+        /* Premium dark: pure black stack only. No warm/brown/purple greys. */
+        --paper: #000000;
+        --surface: #050505;
+        --raised: #0c0c0c;
+        --raised-high: #121212;
+        --ink: #ffffff;
+        --muted: #b3b3b3;
+        --dim: #7a7a7a;
+        --line: rgba(255, 255, 255, 0.1);
+        --line-strong: rgba(255, 255, 255, 0.18);
+        --faint: rgba(255, 255, 255, 0.05);
+        --signal: #ffc400;
+        --signal-ink: #000000;
+        --shadow: 0 24px 64px rgba(0, 0, 0, 0.72);
+        --radius: 10px;
+        --radius-sm: 7px;
+        --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+        --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+        --dur-fast: 140ms;
+        --dur: 220ms;
+        --dur-slow: 360ms;
+        --pad: clamp(0.9rem, 2.4vw, 1.4rem);
+        --ui: clamp(12px, 1.1vw, 13px);
+        --spine-title: "Tile";
+        --tile-accent: var(--signal);
+        --type-scale: 1;
+        --focus: 0 0 0 2px #000, 0 0 0 4px rgba(255, 196, 0, 0.55);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      :focus {
+        outline: none;
+      }
+
+      :focus-visible {
+        outline: none;
+        box-shadow: var(--focus);
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--paper);
+        color: var(--ink);
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          "Inter",
+          "Segoe UI",
+          Arial,
+          Helvetica,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      body {
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+        color: inherit;
+      }
+
+      button {
+        cursor: pointer;
+        border: 0;
+        background: none;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.85rem var(--pad);
+        border-bottom: 1px solid var(--line);
+        background: rgba(0, 0, 0, 0.88);
+        backdrop-filter: blur(16px);
+        position: sticky;
+        top: 0;
+        z-index: 20;
+      }
+
+      .brand {
+        display: flex;
+        align-items: baseline;
+        gap: 0.55rem;
+        min-width: 0;
+      }
+
+      .brand strong {
+        font-size: 0.95rem;
+        letter-spacing: -0.03em;
+        font-weight: 650;
+        animation: brand-breath 5.5s var(--ease) infinite;
+      }
+
+      .brand span {
+        color: var(--dim);
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .spine {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.55rem;
+        justify-content: flex-end;
+      }
+
+      .field {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        min-height: 34px;
+        padding: 0.2rem 0.55rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--raised-high);
+        transition:
+          border-color var(--dur) var(--ease),
+          box-shadow var(--dur) var(--ease);
+      }
+
+      .field:focus-within {
+        border-color: rgba(255, 196, 0, 0.45);
+        box-shadow: 0 0 0 1px rgba(255, 196, 0, 0.12);
+      }
+
+      .field label {
+        font-size: 0.65rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--dim);
+      }
+
+      .field input,
+      .field select {
+        border: 0;
+        outline: 0;
+        background: transparent;
+        min-width: 0;
+        max-width: 9.5rem;
+        font-size: 0.82rem;
+      }
+
+      .field input {
+        width: 8.5rem;
+      }
+
+      .chip {
+        min-height: 34px;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--raised-high);
+        color: var(--ink);
+        font-size: 0.78rem;
+        transition:
+          background var(--dur) var(--ease),
+          border-color var(--dur) var(--ease),
+          color var(--dur) var(--ease),
+          transform var(--dur-fast) var(--ease),
+          box-shadow var(--dur) var(--ease),
+          opacity var(--dur) var(--ease);
+      }
+
+      .chip:hover {
+        border-color: var(--line-strong);
+      }
+
+      .chip:active {
+        transform: scale(0.97);
+      }
+
+      .chip.primary {
+        background: var(--signal);
+        color: var(--signal-ink);
+        border-color: var(--signal);
+        font-weight: 600;
+      }
+
+      .chip.primary:hover {
+        box-shadow: 0 0 0 1px rgba(255, 196, 0, 0.25);
+      }
+
+      .chip.ghost {
+        background: transparent;
+      }
+
+      .chip:disabled {
+        opacity: 0.55;
+        cursor: wait;
+        transform: none;
+      }
+
+      .chip.busy {
+        position: relative;
+        padding-right: 1.7rem;
+      }
+
+      .chip.busy::after {
+        content: "";
+        position: absolute;
+        right: 0.55rem;
+        top: 50%;
+        width: 0.7rem;
+        height: 0.7rem;
+        margin-top: -0.35rem;
+        border-radius: 999px;
+        border: 1.5px solid rgba(0, 0, 0, 0.2);
+        border-top-color: rgba(0, 0, 0, 0.75);
+        animation: spin 0.7s linear infinite;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(220px, 280px) 1fr;
+        min-height: 0;
+      }
+
+      .rail {
+        border-right: 1px solid var(--line);
+        background: #030303;
+        padding: var(--pad);
+        display: flex;
+        flex-direction: column;
+        gap: 1.1rem;
+        overflow: auto;
+      }
+
+      .rail h2,
+      .stage-head h2 {
+        margin: 0;
+        font-size: 0.68rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--dim);
+        font-weight: 600;
+      }
+
+      .hint {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.84rem;
+        line-height: 1.45;
+      }
+
+      .role-list {
+        display: grid;
+        gap: 0.55rem;
+      }
+
+      .role {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 0.35rem 0.6rem;
+        align-items: center;
+        padding: 0.75rem 0.8rem;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--raised-high);
+        text-align: left;
+        cursor: grab;
+        user-select: none;
+        -webkit-user-select: none;
+        transition:
+          border-color var(--dur) var(--ease),
+          transform var(--dur-fast) var(--ease),
+          background var(--dur) var(--ease),
+          box-shadow var(--dur) var(--ease),
+          opacity var(--dur) var(--ease);
+        touch-action: none;
+      }
+
+      .role:hover {
+        border-color: var(--line-strong);
+        transform: translateY(-1px);
+      }
+
+      .role:active,
+      .role.is-dragging {
+        cursor: grabbing;
+        transform: scale(0.985);
+      }
+
+      .role.suggested {
+        border-color: rgba(255, 196, 0, 0.42);
+        box-shadow: inset 0 0 0 1px rgba(255, 196, 0, 0.08);
+      }
+
+      .role.suggested .tag {
+        color: var(--tile-accent);
+      }
+
+      .role strong {
+        font-size: 0.9rem;
+        letter-spacing: -0.02em;
+      }
+
+      .role em {
+        grid-column: 1 / -1;
+        font-style: normal;
+        color: var(--muted);
+        font-size: 0.76rem;
+        line-height: 1.35;
+      }
+
+      .role .tag {
+        font-size: 0.62rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--dim);
+      }
+
+      .stage-wrap {
+        min-width: 0;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        background: var(--paper);
+      }
+
+      .stage-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.9rem var(--pad) 0.2rem;
+      }
+
+      .stage-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        color: var(--dim);
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .stage-meta b {
+        color: var(--muted);
+        font-weight: 500;
+      }
+
+      .stage {
+        padding: var(--pad);
+        min-height: 0;
+        overflow: auto;
+      }
+
+      .board {
+        width: min(100%, 980px);
+        margin: 0 auto;
+        min-height: min(68vh, 720px);
+        padding: 1rem;
+        border: 1px solid var(--line);
+        border-radius: calc(var(--radius) + 4px);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        position: relative;
+        transition:
+          border-color var(--dur) var(--ease),
+          box-shadow var(--dur) var(--ease);
+      }
+
+      .board.empty::before {
+        content: "Click a part to place · or drag it here";
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        color: var(--dim);
+        font-size: 0.9rem;
+        letter-spacing: 0.01em;
+        pointer-events: none;
+        animation: empty-in var(--dur-slow) var(--ease-out);
+      }
+
+      .grid {
+        display: grid;
+        gap: 0.75rem;
+        min-height: 100%;
+        align-content: start;
+        transition: gap var(--dur) var(--ease);
+      }
+
+      .grid[data-layout="strip"] {
+        grid-template-columns: 1fr;
+      }
+
+      .grid[data-layout="pair"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid[data-layout="quad"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid[data-layout="row3"] {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .tile {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 0.85rem;
+        min-height: 0;
+        padding: 1rem 1rem 0.9rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--line);
+        background: var(--raised-high);
+        overflow: hidden;
+        transition:
+          transform var(--dur) var(--ease),
+          border-color var(--dur) var(--ease),
+          box-shadow var(--dur) var(--ease),
+          opacity var(--dur) var(--ease);
+      }
+
+      .tile:hover {
+        border-color: var(--line-strong);
+        transform: translateY(-2px);
+      }
+
+      .tile:focus-visible {
+        border-color: rgba(255, 196, 0, 0.55);
+      }
+
+      .tile.drag-over {
+        border-color: rgba(255, 196, 0, 0.55);
+        box-shadow: 0 0 0 1px rgba(255, 196, 0, 0.18);
+        transform: scale(1.01);
+      }
+
+      .drag-handle {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        color: var(--dim);
+        display: grid;
+        place-items: center;
+        cursor: grab;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: none;
+        font-size: 0.78rem;
+        letter-spacing: -0.04em;
+        line-height: 1;
+      }
+
+      .drag-handle:hover {
+        color: var(--ink);
+        border-color: var(--line);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .drag-handle:active,
+      .tile.dragging .drag-handle {
+        cursor: grabbing;
+      }
+
+      .tile::after {
+        content: "";
+        position: absolute;
+        inset: auto 0 0 0;
+        height: 3px;
+        background: var(--tile-accent);
+        opacity: 0.95;
+        transition: background var(--dur) var(--ease);
+      }
+
+      .tile.dragging {
+        opacity: 0.42;
+        transform: scale(0.985);
+      }
+
+      .tile.enter {
+        animation: settle-in var(--dur-slow) var(--ease-out) both;
+        animation-delay: calc(var(--i, 0) * 45ms);
+      }
+
+      .tile[data-ratio="1:1"] {
+        aspect-ratio: 1 / 1;
+      }
+
+      .tile[data-ratio="4:5"] {
+        aspect-ratio: 4 / 5;
+      }
+
+      .tile[data-ratio="16:9"] {
+        aspect-ratio: 16 / 9;
+      }
+
+      .tile-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.6rem;
+      }
+
+      .role-label {
+        font-size: calc(0.62rem * var(--type-scale));
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--dim);
+      }
+
+      .tile-actions {
+        display: flex;
+        gap: 0.2rem;
+      }
+
+      .icon-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        color: var(--dim);
+        border: 1px solid transparent;
+        display: grid;
+        place-items: center;
+        font-size: 0.85rem;
+        line-height: 1;
+      }
+
+      .icon-btn:hover {
+        color: var(--ink);
+        border-color: var(--line);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .tile-body {
+        display: grid;
+        gap: 0.45rem;
+        min-height: 0;
+      }
+
+      .spine-mark {
+        font-size: calc(0.68rem * var(--type-scale));
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--tile-accent);
+        font-weight: 600;
+      }
+
+      .tile-title {
+        margin: 0;
+        font-size: calc(1.15rem * var(--type-scale));
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+        font-weight: 650;
+      }
+
+      .tile-copy {
+        margin: 0;
+        color: var(--muted);
+        font-size: calc(0.84rem * var(--type-scale));
+        line-height: 1.45;
+      }
+
+      .tile-metric {
+        font-size: calc(1.7rem * var(--type-scale));
+        line-height: 1;
+        letter-spacing: -0.04em;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .tile-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        color: var(--dim);
+        font-size: calc(0.68rem * var(--type-scale));
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      .accent-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: var(--tile-accent);
+        flex: 0 0 auto;
+      }
+
+      .footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+        padding: 0.75rem var(--pad);
+        border-top: 1px solid var(--line);
+        color: var(--dim);
+        font-size: 0.72rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .footer b {
+        color: var(--muted);
+        font-weight: 500;
+      }
+
+      .drop-target {
+        outline: 1px dashed rgba(255, 196, 0, 0.45);
+        outline-offset: -6px;
+      }
+
+      .tile.just-in {
+        animation: settle-in var(--dur-slow) var(--ease-out);
+      }
+
+      @keyframes settle-in {
+        from {
+          opacity: 0;
+          transform: translateY(10px) scale(0.98);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      @keyframes empty-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @keyframes health-tick {
+        0% {
+          filter: brightness(1);
+        }
+        40% {
+          filter: brightness(1.25);
+        }
+        100% {
+          filter: brightness(1);
+        }
+      }
+
+      @keyframes brand-breath {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.72;
+        }
+      }
+
+      .tile.selected {
+        border-color: rgba(255, 196, 0, 0.55);
+        box-shadow: 0 0 0 1px rgba(255, 196, 0, 0.2);
+      }
+
+      .health.tick .health-bar > i {
+        animation: health-tick 0.55s var(--ease);
+      }
+
+      .health-bar > i {
+        transition:
+          width var(--dur-slow) var(--ease-out),
+          background var(--dur) var(--ease);
+      }
+
+      .toast.ok {
+        border-color: rgba(255, 196, 0, 0.35);
+        color: var(--ink);
+      }
+
+      .coach {
+        margin: 0;
+        padding: 0.7rem 0.8rem;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--muted);
+        font-size: 0.78rem;
+        line-height: 1.45;
+      }
+
+      .coach b {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      .coach button {
+        display: inline;
+        margin-left: 0.35rem;
+        color: var(--dim);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        font-size: 0.74rem;
+      }
+
+      .coach button:hover {
+        color: var(--ink);
+      }
+
+      .kbd {
+        display: inline-block;
+        padding: 0.05rem 0.28rem;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        font-size: 0.68rem;
+        color: var(--dim);
+        line-height: 1.3;
+      }
+
+      .tile-title[contenteditable="true"],
+      .tile-copy[contenteditable="true"] {
+        outline: none;
+        border-radius: 4px;
+        cursor: text;
+      }
+
+      .tile-title[contenteditable="true"]:focus,
+      .tile-copy[contenteditable="true"]:focus {
+        background: rgba(255, 255, 255, 0.03);
+        box-shadow: inset 0 0 0 1px var(--line);
+      }
+
+      .health {
+        display: grid;
+        gap: 0.55rem;
+        padding: 0.8rem;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--raised);
+      }
+
+      .health-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+
+      .health-row strong {
+        font-size: 0.82rem;
+        letter-spacing: -0.02em;
+      }
+
+      .health-row span {
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--dim);
+      }
+
+      .health-bar {
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+      }
+
+      .health-bar > i {
+        display: block;
+        height: 100%;
+        width: 0%;
+        background: var(--tile-accent);
+        border-radius: inherit;
+        transition: width 0.28s var(--ease);
+      }
+
+      .health p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.78rem;
+        line-height: 1.4;
+      }
+
+      .health .next {
+        color: var(--ink);
+      }
+
+      .health .next b {
+        color: var(--tile-accent);
+        font-weight: 650;
+      }
+
+      .role.in-set {
+        border-color: rgba(255, 196, 0, 0.28);
+      }
+
+      .role.dup-soft {
+        opacity: 0.72;
+      }
+
+      .role .tag.used {
+        color: var(--tile-accent);
+      }
+
+      .tool-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: 1.2rem;
+        transform: translateX(-50%) translateY(12px);
+        opacity: 0;
+        pointer-events: none;
+        z-index: 40;
+        padding: 0.55rem 0.85rem;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(0, 0, 0, 0.92);
+        color: var(--muted);
+        font-size: 0.78rem;
+        letter-spacing: 0.02em;
+        transition:
+          opacity 0.2s var(--ease),
+          transform 0.2s var(--ease);
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+
+      @media (max-width: 900px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+
+        .rail {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        .field input {
+          width: 6.5rem;
+        }
+
+        .grid[data-layout="row3"],
+        .grid[data-layout="quad"],
+        .grid[data-layout="pair"] {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition: none !important;
+          animation: none !important;
+        }
+
+        .tile:hover,
+        .role:hover {
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <strong>Tile</strong>
+        <span>series grid</span>
+      </div>
+      <div class="spine" id="spine">
+        <div class="field">
+          <label for="spineTitle">Spine</label>
+          <input id="spineTitle" type="text" maxlength="28" value="Tile" placeholder="Series name" />
+        </div>
+        <div class="field">
+          <label for="spineAccent">Accent</label>
+          <select id="spineAccent">
+            <option value="yellow" selected>Yellow</option>
+            <option value="white">White</option>
+            <option value="muted">Muted</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="spineType">Type</label>
+          <select id="spineType">
+            <option value="quiet">Quiet</option>
+            <option value="present" selected>Present</option>
+            <option value="bold">Bold</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="layoutMode">Grid</label>
+          <select id="layoutMode">
+            <option value="pair" selected>Pair</option>
+            <option value="quad">Quad</option>
+            <option value="row3">Row</option>
+            <option value="strip">Strip</option>
+          </select>
+        </div>
+        <button class="chip ghost" id="btnUndo" type="button" title="Undo (Ctrl+Z)">Undo</button>
+        <button class="chip ghost" id="btnClear" type="button">Clear</button>
+        <button class="chip primary" id="btnSample" type="button">Example set</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="rail">
+        <div>
+          <h2>Parts</h2>
+          <p class="hint">
+            Click a part to place it. Drag the ⋮⋮ handle to reorder tiles.
+          </p>
+        </div>
+        <div class="role-list" id="roleList"></div>
+
+        <p class="coach" id="coach">
+          Start with an <b>Opening</b>, then build the set.
+          <span class="kbd">N</span> adds the next part.
+          <button type="button" id="btnDismissCoach">Got it</button>
+        </p>
+
+        <div class="health" id="health">
+          <div class="health-row">
+            <strong id="healthLabel">Empty board</strong>
+            <span id="healthScore">0%</span>
+          </div>
+          <div class="health-bar" aria-hidden="true"><i id="healthFill"></i></div>
+          <p class="next" id="healthNext">Add an <b>Opening</b> to start the set.</p>
+        </div>
+
+        <div>
+          <h2>Actions</h2>
+          <div class="tool-row" style="margin-top: 0.55rem">
+            <button class="chip" id="btnNext" type="button">Add next</button>
+            <button class="chip" id="btnSort" type="button">Put in order</button>
+            <button class="chip" id="btnShuffle" type="button">Mix middle</button>
+            <button class="chip" id="btnAuto" type="button">Fit layout</button>
+            <button class="chip" id="btnOpen" type="button">Open set</button>
+            <button class="chip primary" id="btnDownload" type="button">Download set</button>
+            <input id="fileOpen" type="file" accept="application/json,.json" hidden />
+          </div>
+        </div>
+
+        <div>
+          <h2>Ratio</h2>
+          <div class="tool-row" style="margin-top: 0.55rem">
+            <button class="chip primary" data-ratio="1:1" type="button">1:1</button>
+            <button class="chip" data-ratio="4:5" type="button">4:5</button>
+            <button class="chip" data-ratio="16:9" type="button">16:9</button>
+          </div>
+        </div>
+      </aside>
+
+      <main class="stage-wrap">
+        <div class="stage-head">
+          <h2>Board</h2>
+          <div class="stage-meta">
+            <span>Tiles <b id="tileCount">0</b></span>
+            <span>Ratio <b id="ratioLabel">1:1</b></span>
+            <span>Layout <b id="layoutLabel">Pair</b></span>
+            <span>Fit <b id="grammarLabel">—</b></span>
+          </div>
+        </div>
+        <div class="stage">
+          <div class="board empty" id="board">
+            <div class="grid" data-layout="pair" id="grid"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <footer class="footer">
+      <span>One story · many tiles · shared spine</span>
+      <span>Edit · reorder · download set</span>
+    </footer>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      const ROLE_ORDER = ["opener", "claim", "proof", "detail", "close"];
+      const ROLE_RANK = Object.fromEntries(ROLE_ORDER.map((k, i) => [k, i]));
+
+      // Internal keys stay stable; labels are human-first public language.
+      const ROLES = {
+        opener: {
+          label: "Opening",
+          blurb: "Starts the set",
+          title: "One story",
+          body: "Open with one clear frame. No full pitch yet.",
+          metric: null,
+        },
+        claim: {
+          label: "Main point",
+          blurb: "The line you stand on",
+          title: "Many tiles. Shared spine.",
+          body: "One line the rest of the set can stand under.",
+          metric: null,
+        },
+        proof: {
+          label: "Proof",
+          blurb: "Makes it real",
+          title: "Related, not cloned",
+          body: "A concrete detail that earns the main point.",
+          metric: "05",
+        },
+        detail: {
+          label: "Detail",
+          blurb: "Extra depth if needed",
+          title: "What holds",
+          body: "The quiet structure behind a clean series.",
+          metric: null,
+        },
+        close: {
+          label: "Ending",
+          blurb: "Lands it clean",
+          title: "Leave it clean",
+          body: "End with resolution, not another pitch.",
+          metric: null,
+        },
+      };
+
+      const LAYOUT_LABELS = { pair: "Pair", quad: "Quad", row3: "Row", strip: "Strip" };
+      const MAX_TILES = 8;
+      const PART_FILE = {
+        opener: "opening",
+        claim: "main-point",
+        proof: "proof",
+        detail: "detail",
+        close: "ending",
+      };
+      const RATIO_SIZE = {
+        "1:1": [1080, 1080],
+        "4:5": [1080, 1350],
+        "16:9": [1600, 900],
+      };
+      const EXPORT_COLORS = {
+        paper: "#000000",
+        surface: "#050505",
+        raised: "#121212",
+        ink: "#ffffff",
+        muted: "#b3b3b3",
+        dim: "#7a7a7a",
+        line: "rgba(255,255,255,0.12)",
+        signal: "#ffc400",
+      };
+
+      const state = {
+        tiles: [],
+        ratio: "1:1",
+        layout: "pair",
+        layoutLocked: false,
+        dragId: null,
+        dragKind: null,
+        dragPart: null,
+        selectedId: null,
+        lastAddedId: null,
+        history: [],
+        enterAnim: false,
+        lastHealthScore: null,
+        exporting: false,
+      };
+
+      const els = {
+        roleList: document.getElementById("roleList"),
+        grid: document.getElementById("grid"),
+        board: document.getElementById("board"),
+        spineTitle: document.getElementById("spineTitle"),
+        spineAccent: document.getElementById("spineAccent"),
+        spineType: document.getElementById("spineType"),
+        layoutMode: document.getElementById("layoutMode"),
+        tileCount: document.getElementById("tileCount"),
+        ratioLabel: document.getElementById("ratioLabel"),
+        layoutLabel: document.getElementById("layoutLabel"),
+        grammarLabel: document.getElementById("grammarLabel"),
+        health: document.getElementById("health"),
+        healthLabel: document.getElementById("healthLabel"),
+        healthScore: document.getElementById("healthScore"),
+        healthFill: document.getElementById("healthFill"),
+        healthNext: document.getElementById("healthNext"),
+        coach: document.getElementById("coach"),
+        btnDismissCoach: document.getElementById("btnDismissCoach"),
+        btnClear: document.getElementById("btnClear"),
+        btnSample: document.getElementById("btnSample"),
+        btnUndo: document.getElementById("btnUndo"),
+        btnNext: document.getElementById("btnNext"),
+        btnSort: document.getElementById("btnSort"),
+        btnShuffle: document.getElementById("btnShuffle"),
+        btnAuto: document.getElementById("btnAuto"),
+        btnOpen: document.getElementById("btnOpen"),
+        btnDownload: document.getElementById("btnDownload"),
+        fileOpen: document.getElementById("fileOpen"),
+        toast: document.getElementById("toast"),
+      };
+
+      const DRAFT_KEY = "vai-tile-draft-v1";
+
+      let toastTimer = null;
+
+      function uid() {
+        return "t_" + Math.random().toString(36).slice(2, 9);
+      }
+
+      function spineName() {
+        return (els.spineTitle.value || "Tile").trim() || "Tile";
+      }
+
+      function accentValue(name) {
+        if (name === "white") return "#ffffff";
+        if (name === "muted") return "#8a8a8a";
+        return "#ffc400";
+      }
+
+      function typeScale(name) {
+        if (name === "quiet") return "0.92";
+        if (name === "bold") return "1.12";
+        return "1";
+      }
+
+      function toast(msg, kind) {
+        els.toast.textContent = msg;
+        els.toast.classList.toggle("ok", kind === "ok");
+        els.toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          els.toast.classList.remove("show");
+          els.toast.classList.remove("ok");
+        }, 1700);
+      }
+
+      function snapshot() {
+        state.history.push(JSON.stringify(state.tiles));
+        if (state.history.length > 30) state.history.shift();
+      }
+
+      function undo() {
+        if (!state.history.length) {
+          toast("Nothing to undo");
+          return;
+        }
+        state.tiles = JSON.parse(state.history.pop());
+        state.selectedId = null;
+        state.lastAddedId = null;
+        if (!state.layoutLocked) autoLayout(false);
+        render();
+        toast("Undone");
+      }
+
+      function roleCounts() {
+        const counts = Object.fromEntries(ROLE_ORDER.map((k) => [k, 0]));
+        state.tiles.forEach((t) => {
+          counts[t.role] = (counts[t.role] || 0) + 1;
+        });
+        return counts;
+      }
+
+      function suggestedNext() {
+        const counts = roleCounts();
+        if (!state.tiles.length) return "opener";
+        for (const key of ROLE_ORDER) {
+          if (!counts[key]) return key;
+        }
+        if (state.tiles.length < MAX_TILES) return "detail";
+        return null;
+      }
+
+      function evaluateSet() {
+        const n = state.tiles.length;
+        const counts = roleCounts();
+        const issues = [];
+        let score = 0;
+
+        if (!n) {
+          return {
+            score: 0,
+            label: "Empty board",
+            grammar: "—",
+            next: "Add an <b>Opening</b> to start the set.",
+          };
+        }
+
+        if (counts.opener) score += 22;
+        else issues.push("missing opener");
+        if (counts.claim) score += 18;
+        else issues.push("missing claim");
+        if (counts.proof) score += 18;
+        else issues.push("missing proof");
+        if (counts.close) score += 22;
+        else issues.push("missing close");
+        if (counts.detail) score += 8;
+
+        const first = state.tiles[0];
+        const last = state.tiles[n - 1];
+        if (first.role === "opener") score += 8;
+        else issues.push("opener not first");
+        if (last.role === "close") score += 8;
+        else if (n >= 3) issues.push("close not last");
+
+        const dups = ROLE_ORDER.filter((k) => counts[k] > 1);
+        if (dups.length) {
+          score -= Math.min(16, dups.length * 6);
+          issues.push("repeat parts");
+        }
+
+        if (n >= 3 && n <= 5) score += 4;
+        if (n > MAX_TILES) score -= 12;
+
+        score = Math.max(0, Math.min(100, score));
+
+        let label = "Building";
+        let grammar = "Open";
+        if (score >= 90) {
+          label = "Strong set";
+          grammar = "Locked in";
+        } else if (score >= 70) {
+          label = "Solid set";
+          grammar = "Balanced";
+        } else if (score >= 45) {
+          label = "Coming together";
+          grammar = "Forming";
+        } else {
+          label = "Just started";
+          grammar = "Open";
+        }
+
+        const nextKey = suggestedNext();
+        let next;
+        if (!nextKey && score >= 90) next = "This set feels complete. Mix the middle or edit lines.";
+        else if (!nextKey) next = "Trim repeats or put parts in order.";
+        else if (issues[0] === "opener not first") next = "Put in order — <b>Opening</b> wants first place.";
+        else if (issues[0] === "close not last") next = "Put in order — <b>Ending</b> wants the last frame.";
+        else next = `Next: add a <b>${ROLES[nextKey].label}</b>`;
+
+        return { score, label, grammar, next, nextKey, issues, counts };
+      }
+
+      function applySpine() {
+        const title = spineName();
+        const accent = accentValue(els.spineAccent.value);
+        const scale = typeScale(els.spineType.value);
+        document.documentElement.style.setProperty("--spine-title", `"${title.replace(/"/g, "")}"`);
+        document.documentElement.style.setProperty("--tile-accent", accent);
+        document.documentElement.style.setProperty("--type-scale", scale);
+        render();
+      }
+
+      function setRatio(ratio) {
+        state.ratio = ratio;
+        document.querySelectorAll("[data-ratio]").forEach((btn) => {
+          btn.classList.toggle("primary", btn.getAttribute("data-ratio") === ratio);
+        });
+        els.ratioLabel.textContent = ratio;
+        render();
+      }
+
+      function setLayout(layout, lock = true) {
+        state.layout = layout;
+        if (lock) state.layoutLocked = true;
+        els.grid.dataset.layout = layout;
+        els.layoutMode.value = layout;
+        els.layoutLabel.textContent = LAYOUT_LABELS[layout] || layout;
+        render();
+      }
+
+      function autoLayout(announce = true) {
+        const n = state.tiles.length;
+        let layout = "pair";
+        if (n <= 1) layout = "strip";
+        else if (n === 2) layout = "pair";
+        else if (n === 3) layout = "row3";
+        else if (n === 4) layout = "quad";
+        else layout = n % 2 === 0 ? "pair" : "row3";
+        state.layoutLocked = false;
+        state.layout = layout;
+        els.grid.dataset.layout = layout;
+        els.layoutMode.value = layout;
+        els.layoutLabel.textContent = LAYOUT_LABELS[layout] || layout;
+        if (announce) toast(`Layout fits ${LAYOUT_LABELS[layout].toLowerCase()}`);
+        render();
+      }
+
+      function makeTile(roleKey) {
+        const role = ROLES[roleKey];
+        return {
+          id: uid(),
+          role: roleKey,
+          title: role.title,
+          body: role.body,
+          metric: role.metric,
+        };
+      }
+
+      function addTile(roleKey, index, opts = {}) {
+        if (!ROLES[roleKey]) return;
+        if (state.tiles.length >= MAX_TILES) {
+          toast(`Max ${MAX_TILES} tiles`);
+          return;
+        }
+        if (!opts.silent) snapshot();
+        const counts = roleCounts();
+        if (counts[roleKey] >= 1 && !opts.force) {
+          toast(`${ROLES[roleKey].label} is already in this set`);
+        }
+        const tile = makeTile(roleKey);
+        if (typeof index === "number") state.tiles.splice(index, 0, tile);
+        else state.tiles.push(tile);
+        state.lastAddedId = tile.id;
+        state.selectedId = tile.id;
+        if (!state.layoutLocked) autoLayout(false);
+        else render();
+      }
+
+      function removeTile(id) {
+        snapshot();
+        state.tiles = state.tiles.filter((t) => t.id !== id);
+        if (state.selectedId === id) state.selectedId = null;
+        if (!state.layoutLocked) autoLayout(false);
+        else render();
+      }
+
+      function moveTile(fromId, toId) {
+        if (!fromId || !toId || fromId === toId) return;
+        const from = state.tiles.findIndex((t) => t.id === fromId);
+        const to = state.tiles.findIndex((t) => t.id === toId);
+        if (from < 0 || to < 0) return;
+        snapshot();
+        const [item] = state.tiles.splice(from, 1);
+        state.tiles.splice(to, 0, item);
+        render();
+      }
+
+      function cycleRole(id, dir = 1) {
+        const tile = state.tiles.find((t) => t.id === id);
+        if (!tile) return;
+        snapshot();
+        const i = ROLE_ORDER.indexOf(tile.role);
+        const next = ROLE_ORDER[(i + dir + ROLE_ORDER.length) % ROLE_ORDER.length];
+        const role = ROLES[next];
+        tile.role = next;
+        // only reset copy if still default-ish empty edit path: keep custom text
+        if (!tile.custom) {
+          tile.title = role.title;
+          tile.body = role.body;
+          tile.metric = role.metric;
+        }
+        render();
+        toast(`Now: ${role.label}`);
+      }
+
+      function sortRoles() {
+        if (state.tiles.length < 2) return;
+        snapshot();
+        state.tiles.sort((a, b) => ROLE_RANK[a.role] - ROLE_RANK[b.role]);
+        render({ enter: true });
+        toast("Parts put in order", "ok");
+      }
+
+      function shuffleMiddle() {
+        if (state.tiles.length < 3) {
+          toast("Need at least 3 tiles");
+          return;
+        }
+        snapshot();
+        const head = [];
+        const mid = [];
+        const tail = [];
+        state.tiles.forEach((t, i) => {
+          if (i === 0 && t.role === "opener") head.push(t);
+          else if (i === state.tiles.length - 1 && t.role === "close") tail.push(t);
+          else mid.push(t);
+        });
+        // if opener/close not pinned by position, still protect by role when unique
+        let working = state.tiles.slice();
+        let opener = null;
+        let closer = null;
+        const openers = working.filter((t) => t.role === "opener");
+        const closers = working.filter((t) => t.role === "close");
+        if (openers.length === 1) {
+          opener = openers[0];
+          working = working.filter((t) => t.id !== opener.id);
+        }
+        if (closers.length === 1) {
+          closer = closers[0];
+          working = working.filter((t) => t.id !== closer.id);
+        }
+        for (let i = working.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [working[i], working[j]] = [working[j], working[i]];
+        }
+        state.tiles = [...(opener ? [opener] : []), ...working, ...(closer ? [closer] : [])];
+        render({ enter: true });
+        toast("Middle mixed", "ok");
+      }
+
+      function sampleSet() {
+        snapshot();
+        state.tiles = ["opener", "claim", "proof", "close"].map(makeTile);
+        state.lastAddedId = null;
+        state.selectedId = null;
+        state.layoutLocked = false;
+        state.enterAnim = true;
+        autoLayout(false);
+        toast("Example set loaded", "ok");
+      }
+
+      function clearBoard() {
+        if (!state.tiles.length) return;
+        snapshot();
+        state.tiles = [];
+        state.selectedId = null;
+        state.lastAddedId = null;
+        render();
+      }
+
+      function addNext() {
+        const key = suggestedNext();
+        if (!key) {
+          toast("This set already has enough parts");
+          return;
+        }
+        addTile(key, undefined, { force: true });
+        toast(`Added ${ROLES[key].label}`);
+      }
+
+      function pad2(n) {
+        return String(n).padStart(2, "0");
+      }
+
+      function tileHTML(tile, spineTitle, index) {
+        const role = ROLES[tile.role];
+        const metric =
+          tile.role === "proof" && tile.metric
+            ? `<div class="tile-metric">${escapeHtml(tile.metric)}</div>`
+            : "";
+        const selected = tile.id === state.selectedId ? " selected" : "";
+        const justin = tile.id === state.lastAddedId ? " just-in" : "";
+        const enter = state.enterAnim ? " enter" : "";
+        return `
+          <article class="tile${selected}${justin}${enter}" data-id="${tile.id}" data-ratio="${state.ratio}" style="--i:${index}" tabindex="0">
+            <div class="tile-top">
+              <div class="role-label">${escapeHtml(role.label)}</div>
+              <div class="tile-actions">
+                <button class="drag-handle" type="button" draggable="true" data-drag="${tile.id}" aria-label="Drag to reorder" title="Drag to reorder">⋮⋮</button>
+                <button class="icon-btn" type="button" data-cycle="${tile.id}" aria-label="Change part" title="Change part">↻</button>
+                <button class="icon-btn" type="button" data-remove="${tile.id}" aria-label="Remove tile">×</button>
+              </div>
+            </div>
+            <div class="tile-body">
+              <div class="spine-mark">${escapeHtml(spineTitle)}</div>
+              ${metric}
+              <h3 class="tile-title" contenteditable="true" data-edit="title" data-id="${tile.id}" spellcheck="false">${escapeHtml(tile.title)}</h3>
+              <p class="tile-copy" contenteditable="true" data-edit="body" data-id="${tile.id}" spellcheck="false">${escapeHtml(tile.body)}</p>
+            </div>
+            <div class="tile-foot">
+              <span>${pad2(index + 1)} · ${escapeHtml(role.label)}</span>
+              <span class="accent-dot" aria-hidden="true"></span>
+            </div>
+          </article>
+        `;
+      }
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
+      }
+
+      function updateHealth() {
+        const ev = evaluateSet();
+        const prevScore = state.lastHealthScore;
+        els.healthLabel.textContent = ev.label;
+        els.healthScore.textContent = `${ev.score}%`;
+        els.healthFill.style.width = `${ev.score}%`;
+        els.healthNext.innerHTML = ev.next;
+        els.grammarLabel.textContent = ev.grammar;
+        els.tileCount.textContent = String(state.tiles.length);
+
+        if (prevScore != null && prevScore !== ev.score) {
+          els.health.classList.remove("tick");
+          // reflow so animation can replay
+          void els.health.offsetWidth;
+          els.health.classList.add("tick");
+        }
+        state.lastHealthScore = ev.score;
+
+        // part list affordances + suggested next
+        const counts = ev.counts || roleCounts();
+        const nextKey = ev.nextKey || suggestedNext();
+        els.roleList.querySelectorAll(".role").forEach((btn) => {
+          const key = btn.getAttribute("data-role");
+          const used = counts[key] > 0;
+          btn.classList.toggle("in-set", used);
+          btn.classList.toggle("dup-soft", counts[key] > 1);
+          btn.classList.toggle("suggested", !!nextKey && key === nextKey && !used);
+          const tag = btn.querySelector(".tag");
+          if (tag) {
+            if (nextKey && key === nextKey && !used) tag.textContent = "next";
+            else tag.textContent = used ? (counts[key] > 1 ? `×${counts[key]}` : "in set") : "add";
+            tag.classList.toggle("used", used || (nextKey && key === nextKey));
+          }
+        });
+
+        if (els.btnDownload) {
+          els.btnDownload.disabled = state.tiles.length === 0 || state.exporting;
+          els.btnDownload.title =
+            state.tiles.length === 0 ? "Add tiles first" : "Download set (Ctrl+E)";
+        }
+      }
+
+      function render(opts) {
+        const options = opts || {};
+        const title = spineName();
+        const shouldEnter = !!options.enter || state.enterAnim;
+        state.enterAnim = shouldEnter;
+        els.board.classList.toggle("empty", state.tiles.length === 0);
+        els.grid.dataset.layout = state.layout;
+        els.grid.innerHTML = state.tiles.map((t, i) => tileHTML(t, title, i)).join("");
+        bindTileEvents();
+        updateHealth();
+        if (state.lastAddedId) {
+          const id = state.lastAddedId;
+          setTimeout(() => {
+            if (state.lastAddedId === id) state.lastAddedId = null;
+          }, 420);
+        }
+        if (shouldEnter) {
+          setTimeout(() => {
+            state.enterAnim = false;
+            els.grid.querySelectorAll(".tile.enter").forEach((n) => n.classList.remove("enter"));
+          }, 520);
+        }
+      }
+
+      function clearDragOver() {
+        els.grid.querySelectorAll(".tile.drag-over").forEach((n) => n.classList.remove("drag-over"));
+        els.board.classList.remove("drop-target");
+      }
+
+      function bindTileEvents() {
+        els.grid.querySelectorAll(".tile").forEach((node) => {
+          const id = node.getAttribute("data-id");
+
+          node.addEventListener("click", (e) => {
+            if (e.target.closest("[data-remove], [data-cycle], [data-drag], [contenteditable]")) return;
+            state.selectedId = id;
+            els.grid.querySelectorAll(".tile").forEach((n) => {
+              n.classList.toggle("selected", n.getAttribute("data-id") === id);
+            });
+          });
+
+          node.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = state.dragKind === "part" ? "copy" : "move";
+            els.grid.querySelectorAll(".tile.drag-over").forEach((n) => {
+              if (n !== node) n.classList.remove("drag-over");
+            });
+            node.classList.add("drag-over");
+          });
+
+          node.addEventListener("dragleave", () => {
+            node.classList.remove("drag-over");
+          });
+
+          node.addEventListener("drop", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            clearDragOver();
+            const part =
+              e.dataTransfer.getData("text/part") ||
+              e.dataTransfer.getData("text/role") ||
+              (state.dragKind === "part" ? state.dragPart : "");
+            if (part && ROLES[part]) {
+              const index = state.tiles.findIndex((t) => t.id === id);
+              addTile(part, index < 0 ? undefined : index);
+              return;
+            }
+            const from = e.dataTransfer.getData("text/tile-id") || state.dragId;
+            moveTile(from, id);
+          });
+
+          node.addEventListener("keydown", (e) => {
+            if (e.target.closest("[contenteditable]")) return;
+            if (e.key === "Delete" || e.key === "Backspace") {
+              e.preventDefault();
+              removeTile(id);
+            } else if (e.key === "]" || e.key === "[") {
+              e.preventDefault();
+              cycleRole(id, e.key === "]" ? 1 : -1);
+            }
+          });
+        });
+
+        els.grid.querySelectorAll("[data-drag]").forEach((handle) => {
+          handle.addEventListener("click", (e) => e.stopPropagation());
+          handle.addEventListener("dragstart", (e) => {
+            const id = handle.getAttribute("data-drag");
+            const tile = handle.closest(".tile");
+            state.dragId = id;
+            state.dragKind = "tile";
+            state.dragPart = null;
+            if (tile) tile.classList.add("dragging");
+            e.dataTransfer.effectAllowed = "move";
+            e.dataTransfer.setData("text/tile-id", id);
+            e.dataTransfer.setData("text/plain", id);
+            try {
+              if (tile) e.dataTransfer.setDragImage(tile, 24, 24);
+            } catch (_) {}
+          });
+          handle.addEventListener("dragend", () => {
+            state.dragId = null;
+            state.dragKind = null;
+            state.dragPart = null;
+            els.grid.querySelectorAll(".tile.dragging").forEach((n) => n.classList.remove("dragging"));
+            clearDragOver();
+          });
+        });
+
+        els.grid.querySelectorAll("[data-remove]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            removeTile(btn.getAttribute("data-remove"));
+          });
+        });
+
+        els.grid.querySelectorAll("[data-cycle]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            cycleRole(btn.getAttribute("data-cycle"), 1);
+          });
+        });
+
+        els.grid.querySelectorAll("[contenteditable]").forEach((node) => {
+          node.addEventListener("focus", () => {
+            state.selectedId = node.getAttribute("data-id");
+          });
+          node.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && node.dataset.edit === "title") {
+              e.preventDefault();
+              node.blur();
+            }
+            if (e.key === "Escape") {
+              e.preventDefault();
+              node.blur();
+              render();
+            }
+          });
+          node.addEventListener("blur", () => {
+            const id = node.getAttribute("data-id");
+            const field = node.getAttribute("data-edit");
+            const tile = state.tiles.find((t) => t.id === id);
+            if (!tile) return;
+            const next = node.textContent.trim();
+            if (!next) {
+              render();
+              return;
+            }
+            if (tile[field] !== next) {
+              snapshot();
+              tile[field] = next;
+              tile.custom = true;
+            }
+          });
+        });
+      }
+
+      function mountRoles() {
+        els.roleList.innerHTML = ROLE_ORDER.map((key) => {
+          const role = ROLES[key];
+          return `
+            <button class="role" type="button" draggable="true" data-role="${key}">
+              <strong>${role.label}</strong>
+              <span class="tag">add</span>
+              <em>${role.blurb}</em>
+            </button>
+          `;
+        }).join("");
+
+        els.roleList.querySelectorAll(".role").forEach((btn) => {
+          const role = btn.getAttribute("data-role");
+          let dragged = false;
+
+          btn.addEventListener("dragstart", (e) => {
+            dragged = true;
+            state.dragKind = "part";
+            state.dragPart = role;
+            state.dragId = null;
+            btn.classList.add("is-dragging");
+            e.dataTransfer.effectAllowed = "copy";
+            e.dataTransfer.setData("text/part", role);
+            e.dataTransfer.setData("text/role", role);
+            e.dataTransfer.setData("text/plain", role);
+          });
+          btn.addEventListener("dragend", () => {
+            btn.classList.remove("is-dragging");
+            state.dragKind = null;
+            state.dragPart = null;
+            clearDragOver();
+            setTimeout(() => {
+              dragged = false;
+            }, 0);
+          });
+          btn.addEventListener("click", (e) => {
+            if (dragged) {
+              e.preventDefault();
+              return;
+            }
+            addTile(role);
+          });
+        });
+      }
+
+      els.board.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = state.dragKind === "part" ? "copy" : "move";
+        els.board.classList.add("drop-target");
+      });
+
+      els.board.addEventListener("dragleave", (e) => {
+        if (e.target === els.board) els.board.classList.remove("drop-target");
+      });
+
+      els.board.addEventListener("drop", (e) => {
+        e.preventDefault();
+        clearDragOver();
+        const part =
+          e.dataTransfer.getData("text/part") ||
+          e.dataTransfer.getData("text/role") ||
+          state.dragPart;
+        if (part && ROLES[part]) addTile(part);
+      });
+
+      function serializeSet() {
+        return {
+          version: 1,
+          name: "Tile",
+          spine: {
+            title: spineName(),
+            accent: els.spineAccent.value,
+            type: els.spineType.value,
+          },
+          ratio: state.ratio,
+          layout: state.layout,
+          tiles: state.tiles.map((t) => ({
+            id: t.id,
+            part: t.role,
+            title: t.title,
+            body: t.body,
+            metric: t.metric == null ? null : String(t.metric),
+            custom: !!t.custom,
+          })),
+        };
+      }
+
+      function normalizePart(value) {
+        if (ROLES[value]) return value;
+        const map = {
+          opening: "opener",
+          opener: "opener",
+          claim: "claim",
+          "main-point": "claim",
+          mainpoint: "claim",
+          proof: "proof",
+          detail: "detail",
+          close: "close",
+          ending: "close",
+        };
+        const key = String(value || "")
+          .toLowerCase()
+          .trim()
+          .replace(/\s+/g, "-");
+        return map[key] || null;
+      }
+
+      function applySetFromModel(model, opts) {
+        const options = opts || {};
+        if (!model || !Array.isArray(model.tiles)) {
+          toast("That file is not a Tile set");
+          return false;
+        }
+        const tiles = [];
+        model.tiles.forEach((raw) => {
+          const part = normalizePart(raw.part || raw.role);
+          if (!part) return;
+          const role = ROLES[part];
+          tiles.push({
+            id: raw.id || uid(),
+            role: part,
+            title: (raw.title != null ? String(raw.title) : role.title) || role.title,
+            body: (raw.body != null ? String(raw.body) : role.body) || role.body,
+            metric: raw.metric == null || raw.metric === "" ? role.metric : String(raw.metric),
+            custom: !!raw.custom || (raw.title != null || raw.body != null),
+          });
+        });
+        if (!tiles.length) {
+          toast("No valid parts in that set");
+          return false;
+        }
+
+        if (!options.silent) snapshot();
+
+        const spine = model.spine || {};
+        if (spine.title != null) els.spineTitle.value = String(spine.title).slice(0, 28);
+        if (spine.accent && ["yellow", "white", "muted"].includes(spine.accent)) {
+          els.spineAccent.value = spine.accent;
+        }
+        if (spine.type && ["quiet", "present", "bold"].includes(spine.type)) {
+          els.spineType.value = spine.type;
+        }
+        if (model.ratio && RATIO_SIZE[model.ratio]) state.ratio = model.ratio;
+        if (model.layout && LAYOUT_LABELS[model.layout]) {
+          state.layout = model.layout;
+          state.layoutLocked = true;
+        } else {
+          state.layoutLocked = false;
+        }
+
+        state.tiles = tiles.slice(0, MAX_TILES);
+        state.selectedId = null;
+        state.lastAddedId = null;
+        state.enterAnim = true;
+
+        // apply spine tokens without full recursive render thrash
+        const title = spineName();
+        document.documentElement.style.setProperty("--spine-title", `"${title.replace(/"/g, "")}"`);
+        document.documentElement.style.setProperty("--tile-accent", accentValue(els.spineAccent.value));
+        document.documentElement.style.setProperty("--type-scale", typeScale(els.spineType.value));
+
+        document.querySelectorAll("[data-ratio]").forEach((btn) => {
+          btn.classList.toggle("primary", btn.getAttribute("data-ratio") === state.ratio);
+        });
+        els.ratioLabel.textContent = state.ratio;
+        els.grid.dataset.layout = state.layout;
+        els.layoutMode.value = state.layout;
+        els.layoutLabel.textContent = LAYOUT_LABELS[state.layout] || state.layout;
+
+        if (!state.layoutLocked) autoLayout(false);
+        else render({ enter: true });
+
+        if (!options.silent) toast("Set opened", "ok");
+        return true;
+      }
+
+      function saveDraft() {
+        try {
+          localStorage.setItem(DRAFT_KEY, JSON.stringify(serializeSet()));
+        } catch (_) {}
+      }
+
+      function loadDraft() {
+        try {
+          const raw = localStorage.getItem(DRAFT_KEY);
+          if (!raw) return false;
+          const model = JSON.parse(raw);
+          return applySetFromModel(model, { silent: true });
+        } catch (_) {
+          return false;
+        }
+      }
+
+      function openSetFile(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const model = JSON.parse(String(reader.result || ""));
+            applySetFromModel(model);
+          } catch (_) {
+            toast("Could not read that set file");
+          }
+        };
+        reader.onerror = () => toast("Could not read that set file");
+        reader.readAsText(file);
+      }
+
+      function slugify(value) {
+        return String(value || "tile")
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "")
+          .slice(0, 40) || "tile";
+      }
+
+      function typeScaleNum(name) {
+        if (name === "quiet") return 0.92;
+        if (name === "bold") return 1.12;
+        return 1;
+      }
+
+      function wrapText(ctx, text, maxWidth) {
+        const words = String(text || "").split(/\s+/).filter(Boolean);
+        if (!words.length) return [""];
+        const lines = [];
+        let line = words[0];
+        for (let i = 1; i < words.length; i++) {
+          const test = line + " " + words[i];
+          if (ctx.measureText(test).width <= maxWidth) line = test;
+          else {
+            lines.push(line);
+            line = words[i];
+          }
+        }
+        lines.push(line);
+        return lines;
+      }
+
+      function roundRectPath(ctx, x, y, w, h, r) {
+        const radius = Math.min(r, w / 2, h / 2);
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.arcTo(x + w, y, x + w, y + h, radius);
+        ctx.arcTo(x + w, y + h, x, y + h, radius);
+        ctx.arcTo(x, y + h, x, y, radius);
+        ctx.arcTo(x, y, x + w, y, radius);
+        ctx.closePath();
+      }
+
+      function drawTileCanvas(tile, index, setModel) {
+        const [W, H] = RATIO_SIZE[setModel.ratio] || RATIO_SIZE["1:1"];
+        const canvas = document.createElement("canvas");
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext("2d");
+        const scale = typeScaleNum(setModel.spine.type);
+        const accent = accentValue(setModel.spine.accent);
+        const pad = Math.round(Math.min(W, H) * 0.07);
+        const cardR = Math.round(Math.min(W, H) * 0.035);
+        const barH = Math.max(6, Math.round(H * 0.008));
+        const footerH = Math.round(36 * scale + 28);
+        const contentBottom = H - pad - footerH;
+
+        ctx.fillStyle = EXPORT_COLORS.paper;
+        ctx.fillRect(0, 0, W, H);
+
+        // card
+        roundRectPath(ctx, pad * 0.35, pad * 0.35, W - pad * 0.7, H - pad * 0.7, cardR);
+        ctx.fillStyle = EXPORT_COLORS.raised;
+        ctx.fill();
+        ctx.strokeStyle = EXPORT_COLORS.line;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // accent bar
+        ctx.fillStyle = accent;
+        ctx.fillRect(pad * 0.35, H - pad * 0.35 - barH, W - pad * 0.7, barH);
+
+        let y = pad + 8;
+        const maxW = W - pad * 2;
+
+        // part label
+        const partLabel = (ROLES[tile.part] || ROLES[tile.role] || { label: "Part" }).label;
+        ctx.fillStyle = EXPORT_COLORS.dim;
+        ctx.font = `600 ${Math.round(18 * scale)}px Inter, Segoe UI, Arial, sans-serif`;
+        ctx.fillText(String(partLabel).toUpperCase(), pad, y);
+        y += Math.round(36 * scale);
+
+        // spine
+        ctx.fillStyle = accent;
+        ctx.font = `700 ${Math.round(20 * scale)}px Inter, Segoe UI, Arial, sans-serif`;
+        ctx.fillText(String(setModel.spine.title || "Tile").toUpperCase(), pad, y);
+        y += Math.round(40 * scale);
+
+        // metric
+        if (tile.part === "proof" || tile.role === "proof") {
+          if (tile.metric) {
+            ctx.fillStyle = EXPORT_COLORS.ink;
+            ctx.font = `700 ${Math.round(72 * scale)}px Inter, Segoe UI, Arial, sans-serif`;
+            ctx.fillText(String(tile.metric), pad, y + Math.round(50 * scale));
+            y += Math.round(78 * scale);
+          }
+        }
+
+        // title
+        ctx.fillStyle = EXPORT_COLORS.ink;
+        ctx.font = `700 ${Math.round(48 * scale)}px Inter, Segoe UI, Arial, sans-serif`;
+        const titleLines = wrapText(ctx, tile.title, maxW).slice(0, 4);
+        const titleLH = Math.round(54 * scale);
+        titleLines.forEach((line) => {
+          if (y + titleLH < contentBottom) {
+            ctx.fillText(line, pad, y + titleLH * 0.8);
+            y += titleLH;
+          }
+        });
+        y += Math.round(18 * scale);
+
+        // body
+        ctx.fillStyle = EXPORT_COLORS.muted;
+        ctx.font = `400 ${Math.round(28 * scale)}px Inter, Segoe UI, Arial, sans-serif`;
+        const bodyLines = wrapText(ctx, tile.body, maxW);
+        const bodyLH = Math.round(38 * scale);
+        for (const line of bodyLines) {
+          if (y + bodyLH > contentBottom) break;
+          ctx.fillText(line, pad, y + bodyLH * 0.75);
+          y += bodyLH;
+        }
+
+        // footer
+        const footY = H - pad - 8;
+        ctx.fillStyle = EXPORT_COLORS.dim;
+        ctx.font = `600 ${Math.round(18 * scale)}px Inter, Segoe UI, Arial, sans-serif`;
+        const foot = `${String(index + 1).padStart(2, "0")} · ${partLabel}`.toUpperCase();
+        ctx.fillText(foot, pad, footY);
+        // accent dot
+        ctx.beginPath();
+        ctx.fillStyle = accent;
+        ctx.arc(W - pad - 8, footY - 6, 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        return canvas;
+      }
+
+      function drawOgCanvas(setModel) {
+        const W = 1200;
+        const H = 675;
+        const canvas = document.createElement("canvas");
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext("2d");
+        const accent = accentValue(setModel.spine.accent);
+        const title = setModel.spine.title || "Tile";
+        const claim =
+          (setModel.tiles.find((t) => t.part === "claim") ||
+            setModel.tiles[0] ||
+            { title: "One story. Many tiles." }).title;
+
+        ctx.fillStyle = EXPORT_COLORS.paper;
+        ctx.fillRect(0, 0, W, H);
+
+        // soft left panel
+        ctx.fillStyle = EXPORT_COLORS.raised;
+        ctx.fillRect(48, 48, W - 96, H - 96);
+        ctx.strokeStyle = EXPORT_COLORS.line;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(48, 48, W - 96, H - 96);
+
+        ctx.fillStyle = accent;
+        ctx.fillRect(48, H - 56, W - 96, 8);
+
+        ctx.fillStyle = accent;
+        ctx.font = "700 22px Inter, Segoe UI, Arial, sans-serif";
+        ctx.fillText(String(title).toUpperCase(), 88, 120);
+
+        ctx.fillStyle = EXPORT_COLORS.ink;
+        ctx.font = "700 56px Inter, Segoe UI, Arial, sans-serif";
+        const lines = wrapText(ctx, claim, W - 200).slice(0, 3);
+        let y = 220;
+        lines.forEach((line) => {
+          ctx.fillText(line, 88, y);
+          y += 68;
+        });
+
+        ctx.fillStyle = EXPORT_COLORS.dim;
+        ctx.font = "600 18px Inter, Segoe UI, Arial, sans-serif";
+        ctx.fillText("TILE · SERIES SET", 88, H - 90);
+
+        return canvas;
+      }
+
+      function canvasToPngBytes(canvas) {
+        return new Promise((resolve, reject) => {
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              reject(new Error("png failed"));
+              return;
+            }
+            blob.arrayBuffer().then((buf) => resolve(new Uint8Array(buf))).catch(reject);
+          }, "image/png");
+        });
+      }
+
+      // Minimal ZIP (store method) — no dependency, fine for already-compressed PNGs
+      function crc32(buf) {
+        let c = ~0;
+        for (let i = 0; i < buf.length; i++) {
+          c ^= buf[i];
+          for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
+        }
+        return ~c >>> 0;
+      }
+
+      function u16(n) {
+        return new Uint8Array([n & 255, (n >>> 8) & 255]);
+      }
+      function u32(n) {
+        return new Uint8Array([n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255]);
+      }
+      function concatBytes(chunks) {
+        const total = chunks.reduce((n, c) => n + c.length, 0);
+        const out = new Uint8Array(total);
+        let o = 0;
+        chunks.forEach((c) => {
+          out.set(c, o);
+          o += c.length;
+        });
+        return out;
+      }
+      function strBytes(s) {
+        return new TextEncoder().encode(s);
+      }
+
+      function buildZip(files) {
+        const locals = [];
+        const centrals = [];
+        let offset = 0;
+        files.forEach((file) => {
+          const name = strBytes(file.name);
+          const data = file.data;
+          const crc = crc32(data);
+          const local = concatBytes([
+            u32(0x04034b50),
+            u16(20),
+            u16(0),
+            u16(0),
+            u16(0),
+            u16(0),
+            u32(crc),
+            u32(data.length),
+            u32(data.length),
+            u16(name.length),
+            u16(0),
+            name,
+            data,
+          ]);
+          const central = concatBytes([
+            u32(0x02014b50),
+            u16(20),
+            u16(20),
+            u16(0),
+            u16(0),
+            u16(0),
+            u16(0),
+            u32(crc),
+            u32(data.length),
+            u32(data.length),
+            u16(name.length),
+            u16(0),
+            u16(0),
+            u16(0),
+            u16(0),
+            u32(0),
+            u32(offset),
+            name,
+          ]);
+          locals.push(local);
+          centrals.push(central);
+          offset += local.length;
+        });
+        const centralDir = concatBytes(centrals);
+        const end = concatBytes([
+          u32(0x06054b50),
+          u16(0),
+          u16(0),
+          u16(files.length),
+          u16(files.length),
+          u32(centralDir.length),
+          u32(offset),
+          u16(0),
+        ]);
+        return concatBytes([...locals, centralDir, end]);
+      }
+
+      function downloadBlob(filename, bytes, mime) {
+        const blob = new Blob([bytes], { type: mime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }
+
+      async function downloadSet() {
+        if (!state.tiles.length) {
+          toast("Add at least one tile first");
+          return;
+        }
+        if (state.exporting) return;
+        const setModel = serializeSet();
+        const health = evaluateSet();
+        if (health.score < 45) toast("Set is light — downloading anyway");
+
+        const btn = els.btnDownload;
+        const prev = btn.textContent;
+        state.exporting = true;
+        btn.disabled = true;
+        btn.classList.add("busy");
+        btn.textContent = "Preparing stills…";
+
+        try {
+          const files = [];
+          for (let i = 0; i < setModel.tiles.length; i++) {
+            const tile = setModel.tiles[i];
+            const canvas = drawTileCanvas(tile, i, setModel);
+            const png = await canvasToPngBytes(canvas);
+            const stem = PART_FILE[tile.part] || "tile";
+            const name = `${String(i + 1).padStart(2, "0")}-${stem}.png`;
+            files.push({ name, data: png });
+          }
+
+          const og = await canvasToPngBytes(drawOgCanvas(setModel));
+          files.push({ name: "og.png", data: og });
+
+          const json = strBytes(JSON.stringify(setModel, null, 2));
+          files.push({ name: "set.json", data: json });
+
+          const order = setModel.tiles
+            .map((t, i) => `${String(i + 1).padStart(2, "0")} · ${(ROLES[t.part] || {}).label || t.part}`)
+            .join("\n");
+          const readme = strBytes(
+            `Tile set · ${setModel.spine.title}\n` +
+              `Ratio ${setModel.ratio} · ${setModel.tiles.length} tiles\n\n` +
+              `Order\n${order}\n\n` +
+              `One story. Many tiles. Shared spine.\n`
+          );
+          files.push({ name: "README.txt", data: readme });
+
+          const zip = buildZip(files);
+          const zipName = `${slugify(setModel.spine.title)}-tile-set.zip`;
+          downloadBlob(zipName, zip, "application/zip");
+          toast("Set downloaded", "ok");
+        } catch (err) {
+          console.error(err);
+          toast("Download failed — try again");
+        } finally {
+          state.exporting = false;
+          btn.disabled = state.tiles.length === 0;
+          btn.classList.remove("busy");
+          btn.textContent = prev;
+        }
+      }
+
+      document.querySelectorAll("[data-ratio]").forEach((btn) => {
+        btn.addEventListener("click", () => setRatio(btn.getAttribute("data-ratio")));
+      });
+
+      els.spineTitle.addEventListener("input", applySpine);
+      els.spineAccent.addEventListener("change", applySpine);
+      els.spineType.addEventListener("change", applySpine);
+      els.layoutMode.addEventListener("change", () => setLayout(els.layoutMode.value, true));
+      els.btnClear.addEventListener("click", clearBoard);
+      els.btnSample.addEventListener("click", sampleSet);
+      els.btnUndo.addEventListener("click", undo);
+      els.btnNext.addEventListener("click", addNext);
+      els.btnSort.addEventListener("click", sortRoles);
+      els.btnShuffle.addEventListener("click", shuffleMiddle);
+      els.btnAuto.addEventListener("click", () => autoLayout(true));
+      els.btnDownload.addEventListener("click", () => {
+        downloadSet();
+      });
+
+      if (els.btnOpen && els.fileOpen) {
+        els.btnOpen.addEventListener("click", () => els.fileOpen.click());
+        els.fileOpen.addEventListener("change", () => {
+          const file = els.fileOpen.files && els.fileOpen.files[0];
+          openSetFile(file);
+          els.fileOpen.value = "";
+        });
+      }
+
+      if (els.btnDismissCoach && els.coach) {
+        try {
+          if (localStorage.getItem("vai-tile-coach-dismissed") === "1") {
+            els.coach.hidden = true;
+          }
+        } catch (_) {}
+        els.btnDismissCoach.addEventListener("click", () => {
+          els.coach.hidden = true;
+          try {
+            localStorage.setItem("vai-tile-coach-dismissed", "1");
+          } catch (_) {}
+        });
+      }
+
+      // quiet draft memory — keep work between refreshes
+      let draftTimer = null;
+      function queueDraft() {
+        clearTimeout(draftTimer);
+        draftTimer = setTimeout(saveDraft, 280);
+      }
+      ["input", "change"].forEach((evt) => {
+        els.spineTitle.addEventListener(evt, queueDraft);
+        els.spineAccent.addEventListener(evt, queueDraft);
+        els.spineType.addEventListener(evt, queueDraft);
+        els.layoutMode.addEventListener(evt, queueDraft);
+      });
+      const _render = render;
+      render = function (opts) {
+        _render(opts);
+        queueDraft();
+      };
+
+      window.addEventListener("keydown", (e) => {
+        const tag = (e.target && e.target.tagName) || "";
+        const editing = e.target && e.target.isContentEditable;
+        if (editing || tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+          e.preventDefault();
+          undo();
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "o") {
+          e.preventDefault();
+          if (els.fileOpen) els.fileOpen.click();
+        } else if (e.key.toLowerCase() === "n") {
+          e.preventDefault();
+          addNext();
+        } else if (e.key.toLowerCase() === "s" && !e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          sortRoles();
+        } else if (e.key.toLowerCase() === "a" && !e.ctrlKey && !e.metaKey) {
+          e.preventDefault();
+          autoLayout(true);
+        } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "e") {
+          e.preventDefault();
+          downloadSet();
+        }
+      });
+
+      mountRoles();
+      applySpine();
+      setRatio("1:1");
+      if (!loadDraft()) sampleSet();
+      else toast("Draft restored", "ok");
+    </script>
+  </body>
+</html>
