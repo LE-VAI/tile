@@ -10,21 +10,20 @@
     />
     <meta name="theme-color" content="#000000" />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://le-vai.github.io/tile/" />
+    <meta property="og:image" content="https://le-vai.github.io/tile/assets/og_1200x675.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:description" content="One story. Many tiles. Shared spine." />
+    <meta name="twitter:image" content="https://le-vai.github.io/tile/assets/og_1200x675.png" />
+    <link rel="canonical" href="https://le-vai.github.io/tile/" />
+
     <meta property="og:title" content="Tile" />
     <meta
       property="og:description"
       content="One story. Many tiles. Shared spine."
     />
-    <meta property="og:url" content="https://le-vai.github.io/tile/" />
-    <meta property="og:image" content="https://le-vai.github.io/tile/assets/og_1200x675.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Tile" />
-    <meta
-      name="twitter:description"
-      content="One story. Many tiles. Shared spine."
-    />
-    <meta name="twitter:image" content="https://le-vai.github.io/tile/assets/og_1200x675.png" />
-    <link rel="canonical" href="https://le-vai.github.io/tile/" />
     <style>
       :root {
         color-scheme: dark;
@@ -109,6 +108,7 @@
 
       .topbar {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
@@ -393,10 +393,10 @@
       }
 
       .board {
-        width: min(100%, 980px);
+        width: min(100%, 1100px);
         margin: 0 auto;
         min-height: min(68vh, 720px);
-        padding: 1rem;
+        padding: clamp(0.7rem, 2vw, 1rem);
         border: 1px solid var(--line);
         border-radius: calc(var(--radius) + 4px);
         background: var(--surface);
@@ -425,6 +425,7 @@
         gap: 0.75rem;
         min-height: 100%;
         align-content: start;
+        width: 100%;
         transition: gap var(--dur) var(--ease);
       }
 
@@ -444,14 +445,22 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
+      /* 16:9 landscape needs width; collapse multi-col earlier */
+      .grid[data-ratio="16:9"][data-layout="row3"],
+      .grid[data-ratio="16:9"][data-layout="quad"] {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .tile {
         position: relative;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        gap: 0.85rem;
+        gap: 0.75rem;
+        min-width: 0;
         min-height: 0;
-        padding: 1rem 1rem 0.9rem;
+        width: 100%;
+        padding: 0.95rem 0.95rem 0.85rem;
         border-radius: var(--radius);
         border: 1px solid var(--line);
         background: var(--raised-high);
@@ -528,21 +537,39 @@
 
       .tile[data-ratio="1:1"] {
         aspect-ratio: 1 / 1;
+        min-height: 240px;
       }
 
       .tile[data-ratio="4:5"] {
         aspect-ratio: 4 / 5;
+        min-height: 280px;
       }
 
       .tile[data-ratio="16:9"] {
         aspect-ratio: 16 / 9;
+        min-height: 200px;
+      }
+
+      /* when landscape is too short for copy, grow instead of crushing */
+      .tile[data-ratio="16:9"].roomy {
+        aspect-ratio: auto;
+        min-height: 220px;
       }
 
       .tile-top {
         display: flex;
         align-items: flex-start;
         justify-content: space-between;
-        gap: 0.6rem;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .tile-top-left {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.45rem;
+        min-width: 0;
       }
 
       .role-label {
@@ -552,9 +579,61 @@
         color: var(--dim);
       }
 
+      .mark-control {
+        display: inline-flex;
+        align-items: center;
+        gap: 0;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.03);
+        overflow: hidden;
+        height: 28px;
+        flex: 0 0 auto;
+      }
+
+      .mark-control button {
+        width: 26px;
+        height: 28px;
+        display: grid;
+        place-items: center;
+        color: var(--dim);
+        font-size: 0.9rem;
+        line-height: 1;
+        border: 0;
+        background: transparent;
+      }
+
+      .mark-control button:hover {
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .mark-control input {
+        width: 2.4rem;
+        height: 28px;
+        border: 0;
+        border-left: 1px solid var(--line);
+        border-right: 1px solid var(--line);
+        background: transparent;
+        color: var(--ink);
+        text-align: center;
+        font-size: calc(0.78rem * var(--type-scale));
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.04em;
+        outline: none;
+        padding: 0;
+      }
+
+      .mark-control input:focus {
+        background: rgba(255, 196, 0, 0.08);
+        color: var(--tile-accent);
+      }
+
       .tile-actions {
         display: flex;
         gap: 0.2rem;
+        margin-left: auto;
       }
 
       .icon-btn {
@@ -610,6 +689,29 @@
         letter-spacing: -0.04em;
         font-weight: 700;
         color: var(--ink);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .tile[data-ratio="16:9"] .tile-metric {
+        font-size: calc(1.35rem * var(--type-scale));
+      }
+
+      .tile[data-ratio="16:9"] .tile-title {
+        font-size: calc(1.02rem * var(--type-scale));
+      }
+
+      .tile[data-ratio="16:9"] .tile-copy {
+        font-size: calc(0.78rem * var(--type-scale));
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .tile[data-ratio="16:9"].roomy .tile-copy {
+        -webkit-line-clamp: unset;
+        display: block;
+        overflow: visible;
       }
 
       .tile-foot {
@@ -882,6 +984,18 @@
         transform: translateX(-50%) translateY(0);
       }
 
+      @media (max-width: 1200px) {
+        .grid[data-layout="row3"] {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .grid[data-ratio="16:9"][data-layout="pair"],
+        .grid[data-ratio="16:9"][data-layout="quad"],
+        .grid[data-ratio="16:9"][data-layout="row3"] {
+          grid-template-columns: 1fr;
+        }
+      }
+
       @media (max-width: 900px) {
         .layout {
           grid-template-columns: 1fr;
@@ -890,6 +1004,7 @@
         .rail {
           border-right: 0;
           border-bottom: 1px solid var(--line);
+          max-height: none;
         }
 
         .field input {
@@ -900,6 +1015,79 @@
         .grid[data-layout="quad"],
         .grid[data-layout="pair"] {
           grid-template-columns: 1fr;
+        }
+
+        .tile[data-ratio="1:1"],
+        .tile[data-ratio="4:5"],
+        .tile[data-ratio="16:9"] {
+          aspect-ratio: auto;
+          min-height: 200px;
+        }
+
+        .tile[data-ratio="16:9"] .tile-copy {
+          -webkit-line-clamp: unset;
+          display: block;
+          overflow: visible;
+        }
+
+        .stage-head {
+          padding-top: 0.7rem;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .topbar {
+          padding: 0.7rem var(--pad);
+        }
+
+        .spine {
+          width: 100%;
+          justify-content: flex-start;
+        }
+
+        .brand span {
+          display: none;
+        }
+
+        .field {
+          flex: 1 1 auto;
+        }
+
+        .field input {
+          width: 5.5rem;
+          max-width: 40vw;
+        }
+
+        .board {
+          min-height: 50vh;
+          padding: 0.65rem;
+        }
+
+        .grid {
+          gap: 0.55rem;
+        }
+
+        .tile {
+          padding: 0.8rem;
+        }
+
+        .tile-metric {
+          font-size: calc(1.35rem * var(--type-scale));
+        }
+
+        .footer {
+          gap: 0.35rem;
+        }
+      }
+
+      @media (max-width: 420px) {
+        .mark-control input {
+          width: 2rem;
+        }
+
+        .chip {
+          font-size: 0.74rem;
+          padding: 0.3rem 0.6rem;
         }
       }
 
@@ -1043,35 +1231,35 @@
           blurb: "Starts the set",
           title: "One story",
           body: "Open with one clear frame. No full pitch yet.",
-          metric: null,
+          mark: 1,
         },
         claim: {
           label: "Main point",
           blurb: "The line you stand on",
           title: "Many tiles. Shared spine.",
           body: "One line the rest of the set can stand under.",
-          metric: null,
+          mark: 2,
         },
         proof: {
           label: "Proof",
           blurb: "Makes it real",
           title: "Related, not cloned",
           body: "A concrete detail that earns the main point.",
-          metric: "05",
+          mark: 5,
         },
         detail: {
           label: "Detail",
           blurb: "Extra depth if needed",
           title: "What holds",
           body: "The quiet structure behind a clean series.",
-          metric: null,
+          mark: 4,
         },
         close: {
           label: "Ending",
           blurb: "Lands it clean",
           title: "Leave it clean",
           body: "End with resolution, not another pitch.",
-          metric: null,
+          mark: 5,
         },
       };
 
@@ -1301,11 +1489,13 @@
 
       function setRatio(ratio) {
         state.ratio = ratio;
-        document.querySelectorAll("[data-ratio]").forEach((btn) => {
+        document.querySelectorAll("button.chip[data-ratio]").forEach((btn) => {
           btn.classList.toggle("primary", btn.getAttribute("data-ratio") === ratio);
         });
         els.ratioLabel.textContent = ratio;
-        render();
+        // landscape benefits from layout rethink unless user locked grid
+        if (!state.layoutLocked && ratio === "16:9") autoLayout(false);
+        else render();
       }
 
       function setLayout(layout, lock = true) {
@@ -1319,9 +1509,13 @@
 
       function autoLayout(announce = true) {
         const n = state.tiles.length;
+        const wide = state.ratio === "16:9";
         let layout = "pair";
         if (n <= 1) layout = "strip";
-        else if (n === 2) layout = "pair";
+        else if (wide) {
+          // landscape cards need width — avoid cramped 3-col
+          layout = n <= 2 ? "pair" : n === 3 ? "strip" : "pair";
+        } else if (n === 2) layout = "pair";
         else if (n === 3) layout = "row3";
         else if (n === 4) layout = "quad";
         else layout = n % 2 === 0 ? "pair" : "row3";
@@ -1334,6 +1528,22 @@
         render();
       }
 
+      function nextMark() {
+        if (!state.tiles.length) return 1;
+        const nums = state.tiles.map((t) => Number(t.mark) || 0);
+        return Math.min(99, Math.max(...nums, 0) + 1);
+      }
+
+      function clampMark(value) {
+        const n = parseInt(String(value).replace(/[^\d-]/g, ""), 10);
+        if (Number.isNaN(n)) return 1;
+        return Math.max(0, Math.min(99, n));
+      }
+
+      function formatMark(n) {
+        return pad2(clampMark(n));
+      }
+
       function makeTile(roleKey) {
         const role = ROLES[roleKey];
         return {
@@ -1341,7 +1551,8 @@
           role: roleKey,
           title: role.title,
           body: role.body,
-          metric: role.metric,
+          mark: nextMark(),
+          custom: false,
         };
       }
 
@@ -1396,10 +1607,31 @@
         if (!tile.custom) {
           tile.title = role.title;
           tile.body = role.body;
-          tile.metric = role.metric;
         }
         render();
         toast(`Now: ${role.label}`);
+      }
+
+      function nudgeMark(id, dir) {
+        const tile = state.tiles.find((t) => t.id === id);
+        if (!tile) return;
+        snapshot();
+        tile.mark = clampMark((Number(tile.mark) || 0) + dir);
+        render();
+      }
+
+      function setMark(id, value) {
+        const tile = state.tiles.find((t) => t.id === id);
+        if (!tile) return;
+        const next = clampMark(value);
+        if (clampMark(tile.mark) === next) {
+          // still reformat display
+          render();
+          return;
+        }
+        snapshot();
+        tile.mark = next;
+        render();
       }
 
       function sortRoles() {
@@ -1449,7 +1681,15 @@
 
       function sampleSet() {
         snapshot();
-        state.tiles = ["opener", "claim", "proof", "close"].map(makeTile);
+        state.tiles = [];
+        ["opener", "claim", "proof", "close"].forEach((role) => {
+          state.tiles.push(makeTile(role));
+        });
+        // fixed demo marks for the example story beat
+        state.tiles.forEach((t, i) => {
+          t.mark = i + 1;
+        });
+        if (state.tiles[2]) state.tiles[2].mark = 5; // proof shows a meaningful number
         state.lastAddedId = null;
         state.selectedId = null;
         state.layoutLocked = false;
@@ -1483,17 +1723,32 @@
 
       function tileHTML(tile, spineTitle, index) {
         const role = ROLES[tile.role];
-        const metric =
-          tile.role === "proof" && tile.metric
-            ? `<div class="tile-metric">${escapeHtml(tile.metric)}</div>`
-            : "";
+        const mark = formatMark(tile.mark != null ? tile.mark : index + 1);
+        const showMetric = tile.role === "proof";
+        const metric = showMetric
+          ? `<div class="tile-metric" data-mark-display="${tile.id}">${escapeHtml(mark)}</div>`
+          : "";
         const selected = tile.id === state.selectedId ? " selected" : "";
         const justin = tile.id === state.lastAddedId ? " just-in" : "";
         const enter = state.enterAnim ? " enter" : "";
         return `
           <article class="tile${selected}${justin}${enter}" data-id="${tile.id}" data-ratio="${state.ratio}" style="--i:${index}" tabindex="0">
             <div class="tile-top">
-              <div class="role-label">${escapeHtml(role.label)}</div>
+              <div class="tile-top-left">
+                <div class="role-label">${escapeHtml(role.label)}</div>
+                <div class="mark-control" title="Card number">
+                  <button type="button" data-mark-down="${tile.id}" aria-label="Lower number">−</button>
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="2"
+                    value="${escapeHtml(mark)}"
+                    data-mark-input="${tile.id}"
+                    aria-label="Card number"
+                  />
+                  <button type="button" data-mark-up="${tile.id}" aria-label="Raise number">+</button>
+                </div>
+              </div>
               <div class="tile-actions">
                 <button class="drag-handle" type="button" draggable="true" data-drag="${tile.id}" aria-label="Drag to reorder" title="Drag to reorder">⋮⋮</button>
                 <button class="icon-btn" type="button" data-cycle="${tile.id}" aria-label="Change part" title="Change part">↻</button>
@@ -1507,7 +1762,7 @@
               <p class="tile-copy" contenteditable="true" data-edit="body" data-id="${tile.id}" spellcheck="false">${escapeHtml(tile.body)}</p>
             </div>
             <div class="tile-foot">
-              <span>${pad2(index + 1)} · ${escapeHtml(role.label)}</span>
+              <span><span data-mark-display="${tile.id}">${escapeHtml(mark)}</span> · ${escapeHtml(role.label)}</span>
               <span class="accent-dot" aria-hidden="true"></span>
             </div>
           </article>
@@ -1571,9 +1826,13 @@
         state.enterAnim = shouldEnter;
         els.board.classList.toggle("empty", state.tiles.length === 0);
         els.grid.dataset.layout = state.layout;
+        els.grid.dataset.ratio = state.ratio;
         els.grid.innerHTML = state.tiles.map((t, i) => tileHTML(t, title, i)).join("");
         bindTileEvents();
         updateHealth();
+        requestAnimationFrame(() => {
+          fitTileRooms();
+        });
         if (state.lastAddedId) {
           const id = state.lastAddedId;
           setTimeout(() => {
@@ -1593,12 +1852,32 @@
         els.board.classList.remove("drop-target");
       }
 
+      function fitTileRooms() {
+        els.grid.querySelectorAll(".tile").forEach((node) => {
+          if (node.getAttribute("data-ratio") !== "16:9") {
+            node.classList.remove("roomy");
+            return;
+          }
+          // if landscape box is too short for content, grow instead of clipping
+          const body = node.querySelector(".tile-body");
+          if (!body) return;
+          const cramped = body.scrollHeight > body.clientHeight + 2 || node.scrollHeight > node.clientHeight + 2;
+          node.classList.toggle("roomy", cramped || window.innerWidth < 900);
+        });
+      }
+
       function bindTileEvents() {
         els.grid.querySelectorAll(".tile").forEach((node) => {
           const id = node.getAttribute("data-id");
 
           node.addEventListener("click", (e) => {
-            if (e.target.closest("[data-remove], [data-cycle], [data-drag], [contenteditable]")) return;
+            if (
+              e.target.closest(
+                "[data-remove], [data-cycle], [data-drag], [data-mark-up], [data-mark-down], [data-mark-input], [contenteditable]"
+              )
+            ) {
+              return;
+            }
             state.selectedId = id;
             els.grid.querySelectorAll(".tile").forEach((n) => {
               n.classList.toggle("selected", n.getAttribute("data-id") === id);
@@ -1636,7 +1915,7 @@
           });
 
           node.addEventListener("keydown", (e) => {
-            if (e.target.closest("[contenteditable]")) return;
+            if (e.target.closest("[contenteditable], [data-mark-input]")) return;
             if (e.key === "Delete" || e.key === "Backspace") {
               e.preventDefault();
               removeTile(id);
@@ -1644,6 +1923,52 @@
               e.preventDefault();
               cycleRole(id, e.key === "]" ? 1 : -1);
             }
+          });
+        });
+
+        els.grid.querySelectorAll("[data-mark-up]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            nudgeMark(btn.getAttribute("data-mark-up"), 1);
+          });
+        });
+        els.grid.querySelectorAll("[data-mark-down]").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            nudgeMark(btn.getAttribute("data-mark-down"), -1);
+          });
+        });
+        els.grid.querySelectorAll("[data-mark-input]").forEach((input) => {
+          const id = input.getAttribute("data-mark-input");
+          input.addEventListener("click", (e) => e.stopPropagation());
+          input.addEventListener("focus", () => {
+            state.selectedId = id;
+            input.select();
+          });
+          input.addEventListener("input", () => {
+            // live display sync without full re-render
+            const live = formatMark(input.value || "0");
+            els.grid.querySelectorAll(`[data-mark-display="${id}"]`).forEach((n) => {
+              n.textContent = live;
+            });
+          });
+          input.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              input.blur();
+            } else if (e.key === "ArrowUp") {
+              e.preventDefault();
+              nudgeMark(id, 1);
+            } else if (e.key === "ArrowDown") {
+              e.preventDefault();
+              nudgeMark(id, -1);
+            } else if (e.key === "Escape") {
+              e.preventDefault();
+              render();
+            }
+          });
+          input.addEventListener("blur", () => {
+            setMark(id, input.value);
           });
         });
 
@@ -1797,12 +2122,12 @@
           },
           ratio: state.ratio,
           layout: state.layout,
-          tiles: state.tiles.map((t) => ({
+          tiles: state.tiles.map((t, i) => ({
             id: t.id,
             part: t.role,
             title: t.title,
             body: t.body,
-            metric: t.metric == null ? null : String(t.metric),
+            mark: clampMark(t.mark != null ? t.mark : i + 1),
             custom: !!t.custom,
           })),
         };
@@ -1835,16 +2160,21 @@
           return false;
         }
         const tiles = [];
-        model.tiles.forEach((raw) => {
+        model.tiles.forEach((raw, i) => {
           const part = normalizePart(raw.part || raw.role);
           if (!part) return;
           const role = ROLES[part];
+          let mark = raw.mark;
+          if (mark == null && raw.metric != null && String(raw.metric).trim() !== "") {
+            mark = raw.metric;
+          }
+          if (mark == null) mark = i + 1;
           tiles.push({
             id: raw.id || uid(),
             role: part,
             title: (raw.title != null ? String(raw.title) : role.title) || role.title,
             body: (raw.body != null ? String(raw.body) : role.body) || role.body,
-            metric: raw.metric == null || raw.metric === "" ? role.metric : String(raw.metric),
+            mark: clampMark(mark),
             custom: !!raw.custom || (raw.title != null || raw.body != null),
           });
         });
@@ -1882,7 +2212,7 @@
         document.documentElement.style.setProperty("--tile-accent", accentValue(els.spineAccent.value));
         document.documentElement.style.setProperty("--type-scale", typeScale(els.spineType.value));
 
-        document.querySelectorAll("[data-ratio]").forEach((btn) => {
+        document.querySelectorAll("button.chip[data-ratio]").forEach((btn) => {
           btn.classList.toggle("primary", btn.getAttribute("data-ratio") === state.ratio);
         });
         els.ratioLabel.textContent = state.ratio;
@@ -2016,14 +2346,13 @@
         ctx.fillText(String(setModel.spine.title || "Tile").toUpperCase(), pad, y);
         y += Math.round(40 * scale);
 
-        // metric
+        // mark number (large on proof; always available in footer)
+        const markText = formatMark(tile.mark != null ? tile.mark : index + 1);
         if (tile.part === "proof" || tile.role === "proof") {
-          if (tile.metric) {
-            ctx.fillStyle = EXPORT_COLORS.ink;
-            ctx.font = `700 ${Math.round(72 * scale)}px Inter, Segoe UI, Arial, sans-serif`;
-            ctx.fillText(String(tile.metric), pad, y + Math.round(50 * scale));
-            y += Math.round(78 * scale);
-          }
+          ctx.fillStyle = EXPORT_COLORS.ink;
+          ctx.font = `700 ${Math.round(72 * scale)}px Inter, Segoe UI, Arial, sans-serif`;
+          ctx.fillText(markText, pad, y + Math.round(50 * scale));
+          y += Math.round(78 * scale);
         }
 
         // title
@@ -2054,7 +2383,7 @@
         const footY = H - pad - 8;
         ctx.fillStyle = EXPORT_COLORS.dim;
         ctx.font = `600 ${Math.round(18 * scale)}px Inter, Segoe UI, Arial, sans-serif`;
-        const foot = `${String(index + 1).padStart(2, "0")} · ${partLabel}`.toUpperCase();
+        const foot = `${markText} · ${partLabel}`.toUpperCase();
         ctx.fillText(foot, pad, footY);
         // accent dot
         ctx.beginPath();
@@ -2262,7 +2591,10 @@
           files.push({ name: "set.json", data: json });
 
           const order = setModel.tiles
-            .map((t, i) => `${String(i + 1).padStart(2, "0")} · ${(ROLES[t.part] || {}).label || t.part}`)
+            .map((t, i) => {
+              const mark = formatMark(t.mark != null ? t.mark : i + 1);
+              return `${mark} · ${(ROLES[t.part] || {}).label || t.part}`;
+            })
             .join("\n");
           const readme = strBytes(
             `Tile set · ${setModel.spine.title}\n` +
@@ -2287,8 +2619,13 @@
         }
       }
 
-      document.querySelectorAll("[data-ratio]").forEach((btn) => {
+      document.querySelectorAll("button.chip[data-ratio]").forEach((btn) => {
         btn.addEventListener("click", () => setRatio(btn.getAttribute("data-ratio")));
+      });
+
+      window.addEventListener("resize", () => {
+        clearTimeout(window.__tileResizeTimer);
+        window.__tileResizeTimer = setTimeout(() => fitTileRooms(), 120);
       });
 
       els.spineTitle.addEventListener("input", applySpine);
