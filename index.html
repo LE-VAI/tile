@@ -27,11 +27,12 @@
     <style>
       :root {
         color-scheme: dark;
-        /* Premium dark: pure black stack only. No warm/brown/purple greys. */
+        /* Default Dark theme — pure black stack. */
         --paper: #000000;
         --surface: #050505;
         --raised: #0c0c0c;
         --raised-high: #121212;
+        --rail: #030303;
         --ink: #ffffff;
         --muted: #b3b3b3;
         --dim: #7a7a7a;
@@ -40,6 +41,10 @@
         --faint: rgba(255, 255, 255, 0.05);
         --signal: #ffc400;
         --signal-ink: #000000;
+        --menu-bg: #ffffff;
+        --menu-ink: #111111;
+        --menu-hover: #f0f0f0;
+        --menu-active: #ffe58a;
         --shadow: 0 24px 64px rgba(0, 0, 0, 0.72);
         --radius: 10px;
         --radius-sm: 7px;
@@ -53,7 +58,12 @@
         --spine-title: "Tile";
         --tile-accent: var(--signal);
         --type-scale: 1;
-        --focus: 0 0 0 2px #000, 0 0 0 4px rgba(255, 196, 0, 0.55);
+        --focus: 0 0 0 2px var(--paper), 0 0 0 4px color-mix(in srgb, var(--signal) 55%, transparent);
+        --tap: 44px;
+      }
+
+      html[data-theme="paper"] {
+        color-scheme: light;
       }
 
       * {
@@ -104,6 +114,132 @@
         cursor: pointer;
         border: 0;
         background: none;
+      }
+
+      /* Permanent native-select fix: closed control uses UI ink;
+         open list is always high-contrast light panel (OS-safe). */
+      select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        color: var(--ink);
+        background-color: transparent;
+        background-image:
+          linear-gradient(45deg, transparent 50%, var(--dim) 50%),
+          linear-gradient(135deg, var(--dim) 50%, transparent 50%);
+        background-position:
+          calc(100% - 12px) calc(50% - 2px),
+          calc(100% - 7px) calc(50% - 2px);
+        background-size: 5px 5px, 5px 5px;
+        background-repeat: no-repeat;
+        padding-right: 1.35rem;
+      }
+
+      select option,
+      select optgroup {
+        color: var(--menu-ink);
+        background-color: var(--menu-bg);
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .menu-field {
+        position: relative;
+        gap: 0.35rem;
+      }
+
+      .menu-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        min-height: 28px;
+        padding: 0.1rem 0.1rem 0.1rem 0;
+        border: 0;
+        background: transparent;
+        color: var(--ink);
+        font-size: 0.82rem;
+        max-width: 8.5rem;
+        white-space: nowrap;
+      }
+
+      .menu-trigger::after {
+        content: "";
+        width: 0;
+        height: 0;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 5px solid var(--dim);
+        margin-left: 0.15rem;
+        flex: 0 0 auto;
+      }
+
+      .menu-field.is-open .menu-trigger::after {
+        transform: rotate(180deg);
+      }
+
+      .menu-panel {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        min-width: 100%;
+        width: max-content;
+        max-width: min(16rem, 80vw);
+        padding: 0.3rem;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        background: var(--menu-bg);
+        color: var(--menu-ink);
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+        z-index: 60;
+        display: none;
+      }
+
+      .menu-field.is-open .menu-panel {
+        display: grid;
+        gap: 0.15rem;
+      }
+
+      .menu-option {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        min-height: 36px;
+        padding: 0.4rem 0.65rem;
+        border-radius: 8px;
+        border: 0;
+        background: transparent;
+        color: var(--menu-ink);
+        font-size: 0.84rem;
+        text-align: left;
+        width: 100%;
+      }
+
+      .menu-option:hover,
+      .menu-option:focus-visible {
+        background: var(--menu-hover);
+      }
+
+      .menu-option.is-active {
+        background: var(--menu-active);
+        font-weight: 600;
+      }
+
+      .menu-swatch {
+        width: 0.7rem;
+        height: 0.7rem;
+        border-radius: 999px;
+        border: 1px solid rgba(0, 0, 0, 0.12);
+        flex: 0 0 auto;
       }
 
       .topbar {
@@ -180,14 +316,20 @@
       .field select {
         border: 0;
         outline: 0;
-        background: transparent;
+        background-color: transparent;
         min-width: 0;
         max-width: 9.5rem;
         font-size: 0.82rem;
+        color: var(--ink);
       }
 
       .field input {
         width: 8.5rem;
+      }
+
+      .field select:focus,
+      .field input:focus {
+        outline: none;
       }
 
       .chip {
@@ -263,7 +405,7 @@
 
       .rail {
         border-right: 1px solid var(--line);
-        background: #030303;
+        background: var(--rail);
         padding: var(--pad);
         display: flex;
         flex-direction: column;
@@ -1033,16 +1175,28 @@
         .stage-head {
           padding-top: 0.7rem;
         }
+
+        .menu-panel {
+          left: auto;
+          right: 0;
+        }
       }
 
       @media (max-width: 640px) {
         .topbar {
-          padding: 0.7rem var(--pad);
+          padding: 0.65rem var(--pad);
+          gap: 0.7rem;
+          align-items: stretch;
         }
 
         .spine {
           width: 100%;
           justify-content: flex-start;
+          gap: 0.45rem;
+        }
+
+        .brand {
+          width: 100%;
         }
 
         .brand span {
@@ -1050,17 +1204,64 @@
         }
 
         .field {
-          flex: 1 1 auto;
+          flex: 1 1 calc(50% - 0.45rem);
+          min-width: 0;
+          min-height: var(--tap);
         }
 
         .field input {
-          width: 5.5rem;
-          max-width: 40vw;
+          width: 100%;
+          max-width: none;
+          min-height: 28px;
+        }
+
+        .menu-trigger {
+          max-width: none;
+          width: 100%;
+          justify-content: space-between;
+          min-height: 28px;
+        }
+
+        .chip {
+          min-height: var(--tap);
+          padding: 0.45rem 0.8rem;
+        }
+
+        .role {
+          min-height: var(--tap);
+          padding: 0.85rem 0.9rem;
+        }
+
+        .tool-row {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.45rem;
+        }
+
+        .tool-row .chip {
+          width: 100%;
+          justify-content: center;
+        }
+
+        .tool-row .chip.primary {
+          grid-column: 1 / -1;
+        }
+
+        .stage-head {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.4rem;
+        }
+
+        .stage-meta {
+          flex-wrap: wrap;
+          gap: 0.35rem 0.7rem;
+          font-size: 0.72rem;
         }
 
         .board {
-          min-height: 50vh;
-          padding: 0.65rem;
+          min-height: 48vh;
+          padding: 0.55rem;
         }
 
         .grid {
@@ -1069,14 +1270,49 @@
 
         .tile {
           padding: 0.8rem;
+          min-height: 188px;
         }
 
         .tile-metric {
           font-size: calc(1.35rem * var(--type-scale));
         }
 
+        .mark-control {
+          min-height: 34px;
+        }
+
+        .mark-control button {
+          width: 1.7rem;
+          height: 1.7rem;
+        }
+
         .footer {
           gap: 0.35rem;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .coach {
+          font-size: 0.8rem;
+        }
+
+        .menu-panel {
+          position: fixed;
+          left: var(--pad);
+          right: var(--pad);
+          top: auto;
+          bottom: max(0.75rem, env(safe-area-inset-bottom));
+          width: auto;
+          max-width: none;
+          max-height: min(50vh, 22rem);
+          overflow: auto;
+          padding: 0.45rem;
+          border-radius: 16px;
+        }
+
+        .menu-option {
+          min-height: var(--tap);
+          font-size: 0.92rem;
         }
       }
 
@@ -1087,7 +1323,15 @@
 
         .chip {
           font-size: 0.74rem;
-          padding: 0.3rem 0.6rem;
+          padding: 0.4rem 0.65rem;
+        }
+
+        .field {
+          flex: 1 1 100%;
+        }
+
+        .spine .chip {
+          flex: 1 1 calc(50% - 0.45rem);
         }
       }
 
@@ -1117,25 +1361,53 @@
           <label for="spineTitle">Spine</label>
           <input id="spineTitle" type="text" maxlength="28" value="Tile" placeholder="Series name" />
         </div>
-        <div class="field">
-          <label for="spineAccent">Accent</label>
-          <select id="spineAccent">
+        <div class="field menu-field" data-menu="theme">
+          <label id="themeLabel">Look</label>
+          <button class="menu-trigger" type="button" id="themeTrigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="themeLabel themeTriggerValue">
+            <span id="themeTriggerValue">Dark</span>
+          </button>
+          <div class="menu-panel" id="themeMenu" role="listbox" aria-labelledby="themeLabel"></div>
+          <select id="spineTheme" class="sr-only" tabindex="-1" aria-hidden="true">
+            <option value="dark" selected>Dark</option>
+            <option value="paper">Paper</option>
+            <option value="slate">Slate</option>
+            <option value="night">Night</option>
+          </select>
+        </div>
+        <div class="field menu-field" data-menu="accent">
+          <label id="accentLabel">Accent</label>
+          <button class="menu-trigger" type="button" id="accentTrigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="accentLabel accentTriggerValue">
+            <span id="accentTriggerValue">Yellow</span>
+          </button>
+          <div class="menu-panel" id="accentMenu" role="listbox" aria-labelledby="accentLabel"></div>
+          <select id="spineAccent" class="sr-only" tabindex="-1" aria-hidden="true">
             <option value="yellow" selected>Yellow</option>
             <option value="white">White</option>
+            <option value="blue">Blue</option>
+            <option value="green">Green</option>
+            <option value="coral">Coral</option>
             <option value="muted">Muted</option>
           </select>
         </div>
-        <div class="field">
-          <label for="spineType">Type</label>
-          <select id="spineType">
+        <div class="field menu-field" data-menu="type">
+          <label id="typeLabel">Type</label>
+          <button class="menu-trigger" type="button" id="typeTrigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="typeLabel typeTriggerValue">
+            <span id="typeTriggerValue">Present</span>
+          </button>
+          <div class="menu-panel" id="typeMenu" role="listbox" aria-labelledby="typeLabel"></div>
+          <select id="spineType" class="sr-only" tabindex="-1" aria-hidden="true">
             <option value="quiet">Quiet</option>
             <option value="present" selected>Present</option>
             <option value="bold">Bold</option>
           </select>
         </div>
-        <div class="field">
-          <label for="layoutMode">Grid</label>
-          <select id="layoutMode">
+        <div class="field menu-field" data-menu="layout">
+          <label id="layoutLabelField">Grid</label>
+          <button class="menu-trigger" type="button" id="layoutTrigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="layoutLabelField layoutTriggerValue">
+            <span id="layoutTriggerValue">Pair</span>
+          </button>
+          <div class="menu-panel" id="layoutMenu" role="listbox" aria-labelledby="layoutLabelField"></div>
+          <select id="layoutMode" class="sr-only" tabindex="-1" aria-hidden="true">
             <option value="pair" selected>Pair</option>
             <option value="quad">Quad</option>
             <option value="row3">Row</option>
@@ -1264,6 +1536,101 @@
       };
 
       const LAYOUT_LABELS = { pair: "Pair", quad: "Quad", row3: "Row", strip: "Strip" };
+      const ACCENTS = {
+        yellow: { label: "Yellow", value: "#ffc400" },
+        white: { label: "White", value: "#ffffff" },
+        blue: { label: "Blue", value: "#4ea1ff" },
+        green: { label: "Green", value: "#3dd68c" },
+        coral: { label: "Coral", value: "#ff7a59" },
+        muted: { label: "Muted", value: "#8a8a8a" },
+      };
+      const THEMES = {
+        dark: {
+          label: "Dark",
+          vars: {
+            paper: "#000000",
+            surface: "#050505",
+            raised: "#0c0c0c",
+            "raised-high": "#121212",
+            rail: "#030303",
+            ink: "#ffffff",
+            muted: "#b3b3b3",
+            dim: "#7a7a7a",
+            line: "rgba(255,255,255,0.1)",
+            "line-strong": "rgba(255,255,255,0.18)",
+            faint: "rgba(255,255,255,0.05)",
+            "menu-bg": "#ffffff",
+            "menu-ink": "#111111",
+            "menu-hover": "#f0f0f0",
+            "menu-active": "#ffe58a",
+            "signal-ink": "#000000",
+          },
+        },
+        paper: {
+          label: "Paper",
+          vars: {
+            paper: "#f4f1ea",
+            surface: "#ebe6dc",
+            raised: "#ffffff",
+            "raised-high": "#ffffff",
+            rail: "#efe9df",
+            ink: "#141414",
+            muted: "#5c5c5c",
+            dim: "#7a7a7a",
+            line: "rgba(0,0,0,0.1)",
+            "line-strong": "rgba(0,0,0,0.18)",
+            faint: "rgba(0,0,0,0.04)",
+            "menu-bg": "#ffffff",
+            "menu-ink": "#111111",
+            "menu-hover": "#f3efe7",
+            "menu-active": "#ffe58a",
+            "signal-ink": "#000000",
+          },
+        },
+        slate: {
+          label: "Slate",
+          vars: {
+            paper: "#0b0f14",
+            surface: "#10161d",
+            raised: "#151c25",
+            "raised-high": "#1b2430",
+            rail: "#0a0e13",
+            ink: "#f2f5f8",
+            muted: "#a8b3bf",
+            dim: "#7d8a98",
+            line: "rgba(255,255,255,0.1)",
+            "line-strong": "rgba(255,255,255,0.18)",
+            faint: "rgba(255,255,255,0.05)",
+            "menu-bg": "#ffffff",
+            "menu-ink": "#111111",
+            "menu-hover": "#eef2f6",
+            "menu-active": "#cfe3ff",
+            "signal-ink": "#000000",
+          },
+        },
+        night: {
+          label: "Night",
+          vars: {
+            paper: "#05070c",
+            surface: "#0a0d14",
+            raised: "#101522",
+            "raised-high": "#161d2d",
+            rail: "#04060a",
+            ink: "#f5f7ff",
+            muted: "#aeb6d0",
+            dim: "#7d86a5",
+            line: "rgba(255,255,255,0.1)",
+            "line-strong": "rgba(255,255,255,0.18)",
+            faint: "rgba(255,255,255,0.05)",
+            "menu-bg": "#ffffff",
+            "menu-ink": "#111111",
+            "menu-hover": "#eef0ff",
+            "menu-active": "#d8deff",
+            "signal-ink": "#000000",
+          },
+        },
+      };
+      const TYPE_LABELS = { quiet: "Quiet", present: "Present", bold: "Bold" };
       const MAX_TILES = 8;
       const PART_FILE = {
         opener: "opening",
@@ -1277,16 +1644,24 @@
         "4:5": [1080, 1350],
         "16:9": [1600, 900],
       };
-      const EXPORT_COLORS = {
-        paper: "#000000",
-        surface: "#050505",
-        raised: "#121212",
-        ink: "#ffffff",
-        muted: "#b3b3b3",
-        dim: "#7a7a7a",
-        line: "rgba(255,255,255,0.12)",
-        signal: "#ffc400",
-      };
+      function exportColors(setModel) {
+        const themeName =
+          (setModel && setModel.spine && setModel.spine.theme) || themeKey();
+        const theme = THEMES[themeName] || THEMES.dark;
+        const accentName =
+          (setModel && setModel.spine && setModel.spine.accent) || els.spineAccent.value;
+        const v = theme.vars;
+        return {
+          paper: v.paper,
+          surface: v.surface,
+          raised: v["raised-high"] || v.raised,
+          ink: v.ink,
+          muted: v.muted,
+          dim: v.dim,
+          line: v.line,
+          signal: accentValue(accentName),
+        };
+      }
 
       const state = {
         tiles: [],
@@ -1311,7 +1686,20 @@
         spineTitle: document.getElementById("spineTitle"),
         spineAccent: document.getElementById("spineAccent"),
         spineType: document.getElementById("spineType"),
+        spineTheme: document.getElementById("spineTheme"),
         layoutMode: document.getElementById("layoutMode"),
+        accentTrigger: document.getElementById("accentTrigger"),
+        accentTriggerValue: document.getElementById("accentTriggerValue"),
+        accentMenu: document.getElementById("accentMenu"),
+        typeTrigger: document.getElementById("typeTrigger"),
+        typeTriggerValue: document.getElementById("typeTriggerValue"),
+        typeMenu: document.getElementById("typeMenu"),
+        layoutTrigger: document.getElementById("layoutTrigger"),
+        layoutTriggerValue: document.getElementById("layoutTriggerValue"),
+        layoutMenu: document.getElementById("layoutMenu"),
+        themeTrigger: document.getElementById("themeTrigger"),
+        themeTriggerValue: document.getElementById("themeTriggerValue"),
+        themeMenu: document.getElementById("themeMenu"),
         tileCount: document.getElementById("tileCount"),
         ratioLabel: document.getElementById("ratioLabel"),
         layoutLabel: document.getElementById("layoutLabel"),
@@ -1349,15 +1737,156 @@
       }
 
       function accentValue(name) {
-        if (name === "white") return "#ffffff";
-        if (name === "muted") return "#8a8a8a";
-        return "#ffc400";
+        return (ACCENTS[name] && ACCENTS[name].value) || ACCENTS.yellow.value;
+      }
+
+      function accentLabel(name) {
+        return (ACCENTS[name] && ACCENTS[name].label) || ACCENTS.yellow.label;
       }
 
       function typeScale(name) {
         if (name === "quiet") return "0.92";
         if (name === "bold") return "1.12";
         return "1";
+      }
+
+      function themeKey() {
+        const key = els.spineTheme ? els.spineTheme.value : "dark";
+        return THEMES[key] ? key : "dark";
+      }
+
+      function applyTheme(name) {
+        const key = THEMES[name] ? name : "dark";
+        const theme = THEMES[key];
+        document.documentElement.setAttribute("data-theme", key);
+        Object.entries(theme.vars).forEach(([token, value]) => {
+          document.documentElement.style.setProperty(`--${token}`, value);
+        });
+        if (els.spineTheme) els.spineTheme.value = key;
+        document.documentElement.style.setProperty("--signal", accentValue(els.spineAccent.value));
+        document.documentElement.style.setProperty("--tile-accent", accentValue(els.spineAccent.value));
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute("content", theme.vars.paper);
+        syncMenuLabels();
+      }
+
+      function closeMenus(except) {
+        document.querySelectorAll(".menu-field.is-open").forEach((field) => {
+          if (except && field === except) return;
+          field.classList.remove("is-open");
+          const trigger = field.querySelector(".menu-trigger");
+          if (trigger) trigger.setAttribute("aria-expanded", "false");
+        });
+      }
+
+      function openMenu(field) {
+        if (!field) return;
+        const opening = !field.classList.contains("is-open");
+        closeMenus();
+        if (!opening) return;
+        field.classList.add("is-open");
+        const trigger = field.querySelector(".menu-trigger");
+        if (trigger) trigger.setAttribute("aria-expanded", "true");
+      }
+
+      function buildMenuOptions(panel, items, current, onPick) {
+        if (!panel) return;
+        panel.innerHTML = items
+          .map((item) => {
+            const active = item.value === current ? " is-active" : "";
+            const swatch = item.swatch
+              ? `<span class="menu-swatch" style="background:${item.swatch}"></span>`
+              : "";
+            return `<button type="button" class="menu-option${active}" role="option" data-value="${item.value}" aria-selected="${item.value === current}">${swatch}<span>${item.label}</span></button>`;
+          })
+          .join("");
+        panel.querySelectorAll(".menu-option").forEach((btn) => {
+          btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onPick(btn.getAttribute("data-value"));
+            closeMenus();
+          });
+        });
+      }
+
+      function rebuildMenus() {
+        buildMenuOptions(
+          els.themeMenu,
+          Object.entries(THEMES).map(([value, t]) => ({ value, label: t.label })),
+          themeKey(),
+          (value) => {
+            applyTheme(value);
+            applySpine();
+            rebuildMenus();
+            toast(`${THEMES[value].label} look`, "ok");
+          }
+        );
+        buildMenuOptions(
+          els.accentMenu,
+          Object.entries(ACCENTS).map(([value, a]) => ({
+            value,
+            label: a.label,
+            swatch: a.value,
+          })),
+          els.spineAccent.value,
+          (value) => {
+            els.spineAccent.value = value;
+            applySpine();
+            rebuildMenus();
+          }
+        );
+        buildMenuOptions(
+          els.typeMenu,
+          Object.entries(TYPE_LABELS).map(([value, label]) => ({ value, label })),
+          els.spineType.value,
+          (value) => {
+            els.spineType.value = value;
+            applySpine();
+            rebuildMenus();
+          }
+        );
+        buildMenuOptions(
+          els.layoutMenu,
+          Object.entries(LAYOUT_LABELS).map(([value, label]) => ({ value, label })),
+          state.layout,
+          (value) => setLayout(value, true)
+        );
+        syncMenuLabels();
+      }
+
+      function syncMenuLabels() {
+        if (els.themeTriggerValue) els.themeTriggerValue.textContent = THEMES[themeKey()].label;
+        if (els.accentTriggerValue) els.accentTriggerValue.textContent = accentLabel(els.spineAccent.value);
+        if (els.typeTriggerValue) {
+          els.typeTriggerValue.textContent = TYPE_LABELS[els.spineType.value] || "Present";
+        }
+        if (els.layoutTriggerValue) {
+          els.layoutTriggerValue.textContent = LAYOUT_LABELS[state.layout] || state.layout;
+        }
+      }
+
+      function bindMenus() {
+        const pairs = [
+          [els.themeTrigger, els.themeTrigger && els.themeTrigger.closest(".menu-field")],
+          [els.accentTrigger, els.accentTrigger && els.accentTrigger.closest(".menu-field")],
+          [els.typeTrigger, els.typeTrigger && els.typeTrigger.closest(".menu-field")],
+          [els.layoutTrigger, els.layoutTrigger && els.layoutTrigger.closest(".menu-field")],
+        ];
+        pairs.forEach(([trigger, field]) => {
+          if (!trigger || !field) return;
+          trigger.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            openMenu(field);
+          });
+        });
+        document.addEventListener("click", (e) => {
+          if (!e.target.closest(".menu-field")) closeMenus();
+        });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") closeMenus();
+        });
       }
 
       function toast(msg, kind) {
@@ -1483,7 +2012,9 @@
         const scale = typeScale(els.spineType.value);
         document.documentElement.style.setProperty("--spine-title", `"${title.replace(/"/g, "")}"`);
         document.documentElement.style.setProperty("--tile-accent", accent);
+        document.documentElement.style.setProperty("--signal", accent);
         document.documentElement.style.setProperty("--type-scale", scale);
+        syncMenuLabels();
         render();
       }
 
@@ -1504,6 +2035,7 @@
         els.grid.dataset.layout = layout;
         els.layoutMode.value = layout;
         els.layoutLabel.textContent = LAYOUT_LABELS[layout] || layout;
+        rebuildMenus();
         render();
       }
 
@@ -1524,6 +2056,7 @@
         els.grid.dataset.layout = layout;
         els.layoutMode.value = layout;
         els.layoutLabel.textContent = LAYOUT_LABELS[layout] || layout;
+        rebuildMenus();
         if (announce) toast(`Layout fits ${LAYOUT_LABELS[layout].toLowerCase()}`);
         render();
       }
@@ -2119,6 +2652,7 @@
             title: spineName(),
             accent: els.spineAccent.value,
             type: els.spineType.value,
+            theme: themeKey(),
           },
           ratio: state.ratio,
           layout: state.layout,
@@ -2187,11 +2721,16 @@
 
         const spine = model.spine || {};
         if (spine.title != null) els.spineTitle.value = String(spine.title).slice(0, 28);
-        if (spine.accent && ["yellow", "white", "muted"].includes(spine.accent)) {
+        if (spine.accent && ACCENTS[spine.accent]) {
           els.spineAccent.value = spine.accent;
         }
-        if (spine.type && ["quiet", "present", "bold"].includes(spine.type)) {
+        if (spine.type && TYPE_LABELS[spine.type]) {
           els.spineType.value = spine.type;
+        }
+        if (spine.theme && THEMES[spine.theme]) {
+          applyTheme(spine.theme);
+        } else {
+          applyTheme(themeKey());
         }
         if (model.ratio && RATIO_SIZE[model.ratio]) state.ratio = model.ratio;
         if (model.layout && LAYOUT_LABELS[model.layout]) {
@@ -2210,6 +2749,7 @@
         const title = spineName();
         document.documentElement.style.setProperty("--spine-title", `"${title.replace(/"/g, "")}"`);
         document.documentElement.style.setProperty("--tile-accent", accentValue(els.spineAccent.value));
+        document.documentElement.style.setProperty("--signal", accentValue(els.spineAccent.value));
         document.documentElement.style.setProperty("--type-scale", typeScale(els.spineType.value));
 
         document.querySelectorAll("button.chip[data-ratio]").forEach((btn) => {
@@ -2219,6 +2759,7 @@
         els.grid.dataset.layout = state.layout;
         els.layoutMode.value = state.layout;
         els.layoutLabel.textContent = LAYOUT_LABELS[state.layout] || state.layout;
+        rebuildMenus();
 
         if (!state.layoutLocked) autoLayout(false);
         else render({ enter: true });
@@ -2309,20 +2850,21 @@
         const ctx = canvas.getContext("2d");
         const scale = typeScaleNum(setModel.spine.type);
         const accent = accentValue(setModel.spine.accent);
+        const colors = exportColors(setModel);
         const pad = Math.round(Math.min(W, H) * 0.07);
         const cardR = Math.round(Math.min(W, H) * 0.035);
         const barH = Math.max(6, Math.round(H * 0.008));
         const footerH = Math.round(36 * scale + 28);
         const contentBottom = H - pad - footerH;
 
-        ctx.fillStyle = EXPORT_COLORS.paper;
+        ctx.fillStyle = colors.paper;
         ctx.fillRect(0, 0, W, H);
 
         // card
         roundRectPath(ctx, pad * 0.35, pad * 0.35, W - pad * 0.7, H - pad * 0.7, cardR);
-        ctx.fillStyle = EXPORT_COLORS.raised;
+        ctx.fillStyle = colors.raised;
         ctx.fill();
-        ctx.strokeStyle = EXPORT_COLORS.line;
+        ctx.strokeStyle = colors.line;
         ctx.lineWidth = 2;
         ctx.stroke();
 
@@ -2335,7 +2877,7 @@
 
         // part label
         const partLabel = (ROLES[tile.part] || ROLES[tile.role] || { label: "Part" }).label;
-        ctx.fillStyle = EXPORT_COLORS.dim;
+        ctx.fillStyle = colors.dim;
         ctx.font = `600 ${Math.round(18 * scale)}px Inter, Segoe UI, Arial, sans-serif`;
         ctx.fillText(String(partLabel).toUpperCase(), pad, y);
         y += Math.round(36 * scale);
@@ -2349,14 +2891,14 @@
         // mark number (large on proof; always available in footer)
         const markText = formatMark(tile.mark != null ? tile.mark : index + 1);
         if (tile.part === "proof" || tile.role === "proof") {
-          ctx.fillStyle = EXPORT_COLORS.ink;
+          ctx.fillStyle = colors.ink;
           ctx.font = `700 ${Math.round(72 * scale)}px Inter, Segoe UI, Arial, sans-serif`;
           ctx.fillText(markText, pad, y + Math.round(50 * scale));
           y += Math.round(78 * scale);
         }
 
         // title
-        ctx.fillStyle = EXPORT_COLORS.ink;
+        ctx.fillStyle = colors.ink;
         ctx.font = `700 ${Math.round(48 * scale)}px Inter, Segoe UI, Arial, sans-serif`;
         const titleLines = wrapText(ctx, tile.title, maxW).slice(0, 4);
         const titleLH = Math.round(54 * scale);
@@ -2369,7 +2911,7 @@
         y += Math.round(18 * scale);
 
         // body
-        ctx.fillStyle = EXPORT_COLORS.muted;
+        ctx.fillStyle = colors.muted;
         ctx.font = `400 ${Math.round(28 * scale)}px Inter, Segoe UI, Arial, sans-serif`;
         const bodyLines = wrapText(ctx, tile.body, maxW);
         const bodyLH = Math.round(38 * scale);
@@ -2381,7 +2923,7 @@
 
         // footer
         const footY = H - pad - 8;
-        ctx.fillStyle = EXPORT_COLORS.dim;
+        ctx.fillStyle = colors.dim;
         ctx.font = `600 ${Math.round(18 * scale)}px Inter, Segoe UI, Arial, sans-serif`;
         const foot = `${markText} · ${partLabel}`.toUpperCase();
         ctx.fillText(foot, pad, footY);
@@ -2402,19 +2944,20 @@
         canvas.height = H;
         const ctx = canvas.getContext("2d");
         const accent = accentValue(setModel.spine.accent);
+        const colors = exportColors(setModel);
         const title = setModel.spine.title || "Tile";
         const claim =
           (setModel.tiles.find((t) => t.part === "claim") ||
             setModel.tiles[0] ||
             { title: "One story. Many tiles." }).title;
 
-        ctx.fillStyle = EXPORT_COLORS.paper;
+        ctx.fillStyle = colors.paper;
         ctx.fillRect(0, 0, W, H);
 
         // soft left panel
-        ctx.fillStyle = EXPORT_COLORS.raised;
+        ctx.fillStyle = colors.raised;
         ctx.fillRect(48, 48, W - 96, H - 96);
-        ctx.strokeStyle = EXPORT_COLORS.line;
+        ctx.strokeStyle = colors.line;
         ctx.lineWidth = 2;
         ctx.strokeRect(48, 48, W - 96, H - 96);
 
@@ -2425,7 +2968,7 @@
         ctx.font = "700 22px Inter, Segoe UI, Arial, sans-serif";
         ctx.fillText(String(title).toUpperCase(), 88, 120);
 
-        ctx.fillStyle = EXPORT_COLORS.ink;
+        ctx.fillStyle = colors.ink;
         ctx.font = "700 56px Inter, Segoe UI, Arial, sans-serif";
         const lines = wrapText(ctx, claim, W - 200).slice(0, 3);
         let y = 220;
@@ -2434,7 +2977,7 @@
           y += 68;
         });
 
-        ctx.fillStyle = EXPORT_COLORS.dim;
+        ctx.fillStyle = colors.dim;
         ctx.font = "600 18px Inter, Segoe UI, Arial, sans-serif";
         ctx.fillText("TILE · SERIES SET", 88, H - 90);
 
@@ -2629,8 +3172,21 @@
       });
 
       els.spineTitle.addEventListener("input", applySpine);
-      els.spineAccent.addEventListener("change", applySpine);
-      els.spineType.addEventListener("change", applySpine);
+      els.spineAccent.addEventListener("change", () => {
+        applySpine();
+        rebuildMenus();
+      });
+      els.spineType.addEventListener("change", () => {
+        applySpine();
+        rebuildMenus();
+      });
+      if (els.spineTheme) {
+        els.spineTheme.addEventListener("change", () => {
+          applyTheme(els.spineTheme.value);
+          applySpine();
+          rebuildMenus();
+        });
+      }
       els.layoutMode.addEventListener("change", () => setLayout(els.layoutMode.value, true));
       els.btnClear.addEventListener("click", clearBoard);
       els.btnSample.addEventListener("click", sampleSet);
@@ -2677,6 +3233,7 @@
         els.spineAccent.addEventListener(evt, queueDraft);
         els.spineType.addEventListener(evt, queueDraft);
         els.layoutMode.addEventListener(evt, queueDraft);
+        if (els.spineTheme) els.spineTheme.addEventListener(evt, queueDraft);
       });
       const _render = render;
       render = function (opts) {
@@ -2687,7 +3244,7 @@
       window.addEventListener("keydown", (e) => {
         const tag = (e.target && e.target.tagName) || "";
         const editing = e.target && e.target.isContentEditable;
-        if (editing || tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA") return;
+        if (editing || tag === "INPUT" || tag === "SELECT" || tag === "TEXTAREA" || e.target.closest(".menu-field")) return;
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
           e.preventDefault();
           undo();
@@ -2710,6 +3267,9 @@
       });
 
       mountRoles();
+      bindMenus();
+      applyTheme(themeKey());
+      rebuildMenus();
       applySpine();
       setRatio("1:1");
       if (!loadDraft()) sampleSet();
