@@ -2431,8 +2431,16 @@
 
         if (els.btnDownload) {
           els.btnDownload.disabled = state.tiles.length === 0 || state.exporting;
+          const mobile = isMobileExport();
+          if (!state.exporting) {
+            els.btnDownload.textContent = mobile ? "Save set" : "Download set";
+          }
           els.btnDownload.title =
-            state.tiles.length === 0 ? "Add tiles first" : "Download set (Ctrl+E)";
+            state.tiles.length === 0
+              ? "Add tiles first"
+              : mobile
+                ? "Save or share your tile set"
+                : "Download set (Ctrl/Cmd+E)";
         }
       }
 
