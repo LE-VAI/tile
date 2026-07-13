@@ -454,7 +454,14 @@
           background var(--dur) var(--ease),
           box-shadow var(--dur) var(--ease),
           opacity var(--dur) var(--ease);
-        touch-action: none;
+        /* pan-y keeps page/rail scroll; drag starts only via pointer drag on desktop */
+        touch-action: pan-y;
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        .role {
+          touch-action: none;
+        }
       }
 
       .role:hover {
@@ -550,7 +557,7 @@
       }
 
       .board.empty::before {
-        content: "Click a part to place · or drag it here";
+        content: "Tap a part to place · or drag it here";
         position: absolute;
         inset: 0;
         display: grid;
@@ -1147,6 +1154,14 @@
           border-right: 0;
           border-bottom: 1px solid var(--line);
           max-height: none;
+          overflow: visible;
+          gap: 0.85rem;
+          padding: 0.85rem var(--pad);
+        }
+
+        .role {
+          cursor: pointer;
+          touch-action: pan-y;
         }
 
         .field input {
@@ -1183,16 +1198,25 @@
       }
 
       @media (max-width: 640px) {
+        html,
+        body {
+          overflow-x: hidden;
+          overflow-y: auto;
+          overscroll-behavior-y: contain;
+          -webkit-overflow-scrolling: touch;
+        }
+
         .topbar {
-          padding: 0.65rem var(--pad);
-          gap: 0.7rem;
+          padding: 0.55rem var(--pad);
+          gap: 0.55rem;
           align-items: stretch;
+          position: sticky;
         }
 
         .spine {
           width: 100%;
           justify-content: flex-start;
-          gap: 0.45rem;
+          gap: 0.4rem;
         }
 
         .brand {
@@ -1204,9 +1228,10 @@
         }
 
         .field {
-          flex: 1 1 calc(50% - 0.45rem);
+          flex: 1 1 calc(50% - 0.4rem);
           min-width: 0;
-          min-height: var(--tap);
+          min-height: 40px;
+          padding: 0.15rem 0.5rem;
         }
 
         .field input {
@@ -1223,19 +1248,57 @@
         }
 
         .chip {
-          min-height: var(--tap);
-          padding: 0.45rem 0.8rem;
+          min-height: 40px;
+          padding: 0.4rem 0.7rem;
+        }
+
+        .rail h2 {
+          margin-bottom: 0.15rem;
+        }
+
+        .hint {
+          font-size: 0.78rem;
+          line-height: 1.35;
+        }
+
+        .role-list {
+          gap: 0.4rem;
         }
 
         .role {
-          min-height: var(--tap);
-          padding: 0.85rem 0.9rem;
+          min-height: 40px;
+          padding: 0.55rem 0.7rem;
+          gap: 0.2rem 0.5rem;
+          touch-action: pan-y;
+          cursor: pointer;
+        }
+
+        .role strong {
+          font-size: 0.86rem;
+        }
+
+        .role em {
+          font-size: 0.74rem;
+          line-height: 1.25;
+        }
+
+        .role .tag {
+          font-size: 0.62rem;
+        }
+
+        .coach {
+          font-size: 0.76rem;
+          padding: 0.55rem 0.65rem;
+        }
+
+        .health {
+          padding: 0.55rem 0.65rem;
         }
 
         .tool-row {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 0.45rem;
+          gap: 0.4rem;
         }
 
         .tool-row .chip {
@@ -1247,53 +1310,64 @@
           grid-column: 1 / -1;
         }
 
+        .stage-wrap {
+          min-width: 0;
+        }
+
         .stage-head {
           flex-direction: column;
           align-items: flex-start;
-          gap: 0.4rem;
+          gap: 0.35rem;
+          padding: 0.55rem var(--pad) 0.35rem;
         }
 
         .stage-meta {
           flex-wrap: wrap;
-          gap: 0.35rem 0.7rem;
-          font-size: 0.72rem;
+          gap: 0.3rem 0.65rem;
+          font-size: 0.7rem;
+        }
+
+        .stage {
+          padding: 0 var(--pad) 0.65rem;
         }
 
         .board {
-          min-height: 48vh;
-          padding: 0.55rem;
+          min-height: 42vh;
+          padding: 0.5rem;
         }
 
         .grid {
-          gap: 0.55rem;
+          gap: 0.5rem;
         }
 
         .tile {
-          padding: 0.8rem;
-          min-height: 188px;
+          padding: 0.7rem;
+          min-height: 172px;
         }
 
         .tile-metric {
-          font-size: calc(1.35rem * var(--type-scale));
+          font-size: calc(1.28rem * var(--type-scale));
         }
 
         .mark-control {
-          min-height: 34px;
+          min-height: 32px;
         }
 
         .mark-control button {
-          width: 1.7rem;
-          height: 1.7rem;
+          width: 1.55rem;
+          height: 1.55rem;
+        }
+
+        .drag-handle {
+          /* board reorder stays handle-only; don't block page scroll elsewhere */
+          touch-action: none;
         }
 
         .footer {
-          gap: 0.35rem;
+          gap: 0.3rem;
           flex-direction: column;
           align-items: flex-start;
-        }
-
-        .coach {
-          font-size: 0.8rem;
+          padding: 0.7rem var(--pad) calc(0.85rem + env(safe-area-inset-bottom));
         }
 
         .menu-panel {
@@ -1311,7 +1385,7 @@
         }
 
         .menu-option {
-          min-height: var(--tap);
+          min-height: 44px;
           font-size: 0.92rem;
         }
       }
@@ -1323,7 +1397,7 @@
 
         .chip {
           font-size: 0.74rem;
-          padding: 0.4rem 0.65rem;
+          padding: 0.35rem 0.6rem;
         }
 
         .field {
@@ -1331,7 +1405,17 @@
         }
 
         .spine .chip {
-          flex: 1 1 calc(50% - 0.45rem);
+          flex: 1 1 calc(50% - 0.4rem);
+        }
+
+        .role em {
+          display: none;
+        }
+
+        .role {
+          grid-template-columns: 1fr auto;
+          align-items: center;
+          padding: 0.5rem 0.65rem;
         }
       }
 
@@ -1425,7 +1509,7 @@
         <div>
           <h2>Parts</h2>
           <p class="hint">
-            Click a part to place it. Drag the ⋮⋮ handle to reorder tiles.
+            Tap a part to place it. On desktop you can also drag parts. Use ⋮⋮ to reorder tiles.
           </p>
         </div>
         <div class="role-list" id="roleList"></div>
@@ -2578,11 +2662,17 @@
         });
       }
 
+      function canDragParts() {
+        // Fine pointer + hover = desktop drag. Touch/mobile: tap to add, pan to scroll.
+        return window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+      }
+
       function mountRoles() {
+        const dragParts = canDragParts();
         els.roleList.innerHTML = ROLE_ORDER.map((key) => {
           const role = ROLES[key];
           return `
-            <button class="role" type="button" draggable="true" data-role="${key}">
+            <button class="role" type="button" ${dragParts ? 'draggable="true"' : ""} data-role="${key}">
               <strong>${role.label}</strong>
               <span class="tag">add</span>
               <em>${role.blurb}</em>
@@ -2594,26 +2684,29 @@
           const role = btn.getAttribute("data-role");
           let dragged = false;
 
-          btn.addEventListener("dragstart", (e) => {
-            dragged = true;
-            state.dragKind = "part";
-            state.dragPart = role;
-            state.dragId = null;
-            btn.classList.add("is-dragging");
-            e.dataTransfer.effectAllowed = "copy";
-            e.dataTransfer.setData("text/part", role);
-            e.dataTransfer.setData("text/role", role);
-            e.dataTransfer.setData("text/plain", role);
-          });
-          btn.addEventListener("dragend", () => {
-            btn.classList.remove("is-dragging");
-            state.dragKind = null;
-            state.dragPart = null;
-            clearDragOver();
-            setTimeout(() => {
-              dragged = false;
-            }, 0);
-          });
+          if (dragParts) {
+            btn.addEventListener("dragstart", (e) => {
+              dragged = true;
+              state.dragKind = "part";
+              state.dragPart = role;
+              state.dragId = null;
+              btn.classList.add("is-dragging");
+              e.dataTransfer.effectAllowed = "copy";
+              e.dataTransfer.setData("text/part", role);
+              e.dataTransfer.setData("text/role", role);
+              e.dataTransfer.setData("text/plain", role);
+            });
+            btn.addEventListener("dragend", () => {
+              btn.classList.remove("is-dragging");
+              state.dragKind = null;
+              state.dragPart = null;
+              clearDragOver();
+              setTimeout(() => {
+                dragged = false;
+              }, 0);
+            });
+          }
+
           btn.addEventListener("click", (e) => {
             if (dragged) {
               e.preventDefault();
