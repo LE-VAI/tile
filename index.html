@@ -3077,15 +3077,62 @@
         return canvas;
       }
 
+      function isMobileExport() {
+        return window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
+      }
+
+      function yieldFrame() {
+        return new Promise((resolve) => {
+          requestAnimationFrame(() => resolve());
+        });
+      }
+
+      function dataUrlToBytes(dataUrl) {
+        const comma = dataUrl.indexOf(",");
+        const b64 = comma >= 0 ? dataUrl.slice(comma + 1) : dataUrl;
+        const bin = atob(b64);
+        const out = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+        return out;
+      }
+
       function canvasToPngBytes(canvas) {
         return new Promise((resolve, reject) => {
-          canvas.toBlob((blob) => {
+          const finishBlob = (blob) => {
             if (!blob) {
-              reject(new Error("png failed"));
+              try {
+                resolve(dataUrlToBytes(canvas.toDataURL("image/png")));
+              } catch (err) {
+                reject(err);
+              }
               return;
             }
-            blob.arrayBuffer().then((buf) => resolve(new Uint8Array(buf))).catch(reject);
-          }, "image/png");
+            if (blob.arrayBuffer) {
+              blob
+                .arrayBuffer()
+                .then((buf) => resolve(new Uint8Array(buf)))
+                .catch(reject);
+              return;
+            }
+            const reader = new FileReader();
+            reader.onload = () => resolve(new Uint8Array(reader.result));
+            reader.onerror = () => reject(reader.error || new Error("png read failed"));
+            reader.readAsArrayBuffer(blob);
+          };
+
+          if (typeof canvas.toBlob === "function") {
+            try {
+              canvas.toBlob((blob) => finishBlob(blob), "image/png");
+              return;
+            } catch (_) {
+              // fall through
+            }
+          }
+          try {
+            resolve(dataUrlToBytes(canvas.toDataURL("image/png")));
+          } catch (err) {
+            reject(err);
+          }
         });
       }
 
@@ -3180,16 +3227,121 @@
         return concatBytes([...locals, centralDir, end]);
       }
 
-      function downloadBlob(filename, bytes, mime) {
-        const blob = new Blob([bytes], { type: mime });
+      function bytesToBlob(bytes, mime) {
+        // Copy into a plain ArrayBuffer-backed view for picky mobile WebViews.
+        const copy = new Uint8Array(bytes.byteLength);
+        copy.set(bytes);
+        return new Blob([copy], { type: mime || "application/octet-stream" });
+      }
+
+      function triggerAnchorDownload(blob, filename) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
         a.download = filename;
+        a.rel = "noopener";
+        a.style.display = "none";
         document.body.appendChild(a);
         a.click();
         a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 1500);
+        // Mobile Safari often needs the URL alive longer than desktop.
+        setTimeout(() => URL.revokeObjectURL(url), isMobileExport() ? 60000 : 4000);
+        return url;
+      }
+
+      async function saveExportBlob(filename, bytes, mime) {
+        const blob = bytesToBlob(bytes, mime);
+        const file = typeof File === "function" ? new File([blob], filename, { type: mime }) : null;
+
+        // 1) Native share sheet — most reliable on iOS/Android after async render.
+        if (file && navigator.share && navigator.canShare) {
+          try {
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                files: [file],
+                title: "Tile set",
+                text: filename,
+              });
+              return { method: "share", status: "ok" };
+            }
+          } catch (err) {
+            if (err && err.name === "AbortError") {
+              return { method: "share", status: "cancelled" };
+            }
+            // fall through to other methods
+          }
+        }
+
+        // 2) File picker (Chromium desktop / some Android browsers).
+        if (window.showSaveFilePicker) {
+          try {
+            const handle = await window.showSaveFilePicker({
+              suggestedName: filename,
+              types: [
+                {
+                  description: "Tile set zip",
+                  accept: {
+                    "application/zip": [".zip"],
+                    "application/octet-stream": [".zip"],
+                  },
+                },
+              ],
+            });
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            return { method: "picker", status: "ok" };
+          } catch (err) {
+            if (err && err.name === "AbortError") {
+              return { method: "picker", status: "cancelled" };
+            }
+          }
+        }
+
+        // 3) Legacy IE/Edge
+        if (navigator.msSaveOrOpenBlob) {
+          navigator.msSaveOrOpenBlob(blob, filename);
+          return { method: "msSave", status: "ok" };
+        }
+
+        // 4) Anchor download (desktop + many Android browsers).
+        triggerAnchorDownload(blob, filename);
+
+        // 5) Mobile fallback: if share wasn't available, open blob so user can save.
+        if (isMobileExport() && !(file && navigator.canShare)) {
+          try {
+            const url = URL.createObjectURL(blob);
+            const opened = window.open(url, "_blank");
+            if (!opened) {
+              // Popup blocked — keep a temporary in-page save link.
+              const link = document.createElement("a");
+              link.href = url;
+              link.download = filename;
+              link.textContent = "Tap to save set";
+              link.className = "chip primary";
+              link.style.position = "fixed";
+              link.style.left = "50%";
+              link.style.bottom = "max(1rem, env(safe-area-inset-bottom))";
+              link.style.transform = "translateX(-50%)";
+              link.style.zIndex = "80";
+              link.id = "tile-save-fallback";
+              const old = document.getElementById("tile-save-fallback");
+              if (old) old.remove();
+              document.body.appendChild(link);
+              setTimeout(() => {
+                link.remove();
+                URL.revokeObjectURL(url);
+              }, 45000);
+              return { method: "fallback-link", status: "ok" };
+            }
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+            return { method: "open", status: "ok" };
+          } catch (_) {
+            return { method: "anchor", status: "ok" };
+          }
+        }
+
+        return { method: "anchor", status: "ok" };
       }
 
       async function downloadSet() {
@@ -3203,7 +3355,7 @@
         if (health.score < 45) toast("Set is light — downloading anyway");
 
         const btn = els.btnDownload;
-        const prev = btn.textContent;
+        const prev = btn.textContent || "Download set";
         state.exporting = true;
         btn.disabled = true;
         btn.classList.add("busy");
@@ -3211,16 +3363,27 @@
 
         try {
           const files = [];
-          for (let i = 0; i < setModel.tiles.length; i++) {
+          const total = setModel.tiles.length;
+          for (let i = 0; i < total; i++) {
+            btn.textContent = `Rendering ${i + 1}/${total}…`;
+            await yieldFrame();
             const tile = setModel.tiles[i];
             const canvas = drawTileCanvas(tile, i, setModel);
             const png = await canvasToPngBytes(canvas);
+            // free canvas memory on constrained mobile browsers
+            canvas.width = 0;
+            canvas.height = 0;
             const stem = PART_FILE[tile.part] || "tile";
             const name = `${String(i + 1).padStart(2, "0")}-${stem}.png`;
             files.push({ name, data: png });
           }
 
-          const og = await canvasToPngBytes(drawOgCanvas(setModel));
+          btn.textContent = "Packing set…";
+          await yieldFrame();
+          const ogCanvas = drawOgCanvas(setModel);
+          const og = await canvasToPngBytes(ogCanvas);
+          ogCanvas.width = 0;
+          ogCanvas.height = 0;
           files.push({ name: "og.png", data: og });
 
           const json = strBytes(JSON.stringify(setModel, null, 2));
@@ -3242,8 +3405,21 @@
 
           const zip = buildZip(files);
           const zipName = `${slugify(setModel.spine.title)}-tile-set.zip`;
-          downloadBlob(zipName, zip, "application/zip");
-          toast("Set downloaded", "ok");
+          btn.textContent = isMobileExport() ? "Save / Share…" : "Saving…";
+          await yieldFrame();
+
+          const result = await saveExportBlob(zipName, zip, "application/zip");
+          if (result.status === "cancelled") {
+            toast("Save cancelled");
+          } else if (result.method === "share") {
+            toast("Share sheet ready", "ok");
+          } else if (result.method === "fallback-link") {
+            toast("Tap the save button below", "ok");
+          } else if (result.method === "open") {
+            toast("Opened set — use Save/Share in browser", "ok");
+          } else {
+            toast("Set downloaded", "ok");
+          }
         } catch (err) {
           console.error(err);
           toast("Download failed — try again");
